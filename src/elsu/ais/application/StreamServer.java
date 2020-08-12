@@ -13,22 +13,26 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import elsu.support.ConfigLoader;
 import elsu.base.IAISEventListener;
 import elsu.sentence.SentenceFactory;
-import elsu.ais.application.StreamClientMonitor;
+import elsu.ais.application.StreamClientConnector;
+import elsu.ais.monitor.TrackMonitor;
+import elsu.ais.monitor.TrackStatus;
 import elsu.ais.resources.IClientListener;
 import elsu.ais.resources.ITrackListener;
 
 public class StreamServer extends WebSocketServer implements IClientListener, IAISEventListener, ITrackListener {
 
 	public StreamServer(InetSocketAddress address, ConfigLoader config, Object tracker,
-			ArrayList<StreamClientMonitor> monitors) {
+			ArrayList<StreamClientConnector> connectors, TrackMonitor watcher) {
 		super(address);
 
 		this.config = config;
-		this.monitors = monitors;
+		this.connectors = connectors;
+		this.watcher = watcher;
 
 		// connect all monitors to the tracker
 		getSentenceFactory().addEventListener(this);
-		for (StreamClientMonitor monitor : this.monitors) {
+		this.watcher.registerListener(this);
+		for (StreamClientConnector monitor : this.connectors) {
 			monitor.addListener(this);
 		}
 	}
@@ -94,35 +98,38 @@ public class StreamServer extends WebSocketServer implements IClientListener, IA
 	@Override
 	public void onAISComplete(Object o) {
 		Thread.yield();
-		broadcast("{\"message\": " + o + ", \"state\": \"new\"}");
+		//broadcast("{\"message\": " + o + ", \"state\": \"new\"}");
 	}
 
 	@Override
 	public void onAISUpdate(Object o) {
 		Thread.yield();
-		broadcast("{\"message\": " + o + ", \"state\": \"update\"}");
+		//broadcast("{\"message\": " + o + ", \"state\": \"update\"}");
 	}
 
 	@Override
-	public void onTrackRemove(String status) {
+	public void onTrackRemove(TrackStatus status) {
 		System.out.println("track remove; " + status);
+		broadcast("{\"message\": " + status + ", \"state\": \"remove\"}");
 	}
 
 	@Override
-	public void onTrackAdd(String status) {
+	public void onTrackAdd(TrackStatus status) {
 		System.out.println("track add; " + status);
+		broadcast("{\"message\": " + status + ", \"state\": \"add\"}");
 	}
 
 	@Override
-	public void onTrackUpdate(String status) {
+	public void onTrackUpdate(TrackStatus status) {
 		System.out.println("track update; " + status);
+		broadcast("{\"message\": " + status + ", \"state\": \"update\"}");
 	}
 
 	public static void main(String[] args) {
 		// load the app config
 		ConfigLoader config = null;
-		StreamClientMonitor cmdMonitor = null;
-		ArrayList<StreamClientMonitor> monitors = new ArrayList<>();
+		StreamClientConnector cmdConnector = null;
+		ArrayList<StreamClientConnector> connectors = new ArrayList<>();
 
 		try {
 			config = new ConfigLoader("config/app.config", null);
@@ -141,10 +148,10 @@ public class StreamServer extends WebSocketServer implements IClientListener, IA
 				name = args[2];
 				id = args[3];
 
-				cmdMonitor = new StreamClientMonitor(config, "", host, port, name, id);
-				cmdMonitor.start();
+				cmdConnector = new StreamClientConnector(config, "", host, port, name, id);
+				cmdConnector.start();
 
-				monitors.add(cmdMonitor);
+				connectors.add(cmdConnector);
 			} else if (args.length > 0) {
 				throw new Exception("invalid arguments: java -jar ./AISStreamServer.jar host%s port%i name%s id%s");
 			}
@@ -154,20 +161,23 @@ public class StreamServer extends WebSocketServer implements IClientListener, IA
 				String connectionList = config.getProperty("application.services.activeList").toString();
 				String[] connections = connectionList.split(",");
 				for (String connection : connections) {
-					cmdMonitor = new StreamClientMonitor(config, connection, "", 0, "", "");
-					cmdMonitor.start();
+					cmdConnector = new StreamClientConnector(config, connection, "", 0, "", "");
+					cmdConnector.start();
 
-					monitors.add(cmdMonitor);
+					connectors.add(cmdConnector);
 				}
 			}
 
+			// start the track monitor
+			TrackMonitor watcher = new TrackMonitor(config);
+			
 			// start websocket server
 			String _websocketHostUri = config.getProperty("application.services.key.websocket.host").toString();
 			int _websocketHostPort = Integer
 					.parseInt(config.getProperty("application.services.key.websocket.port").toString());
 
 			WebSocketServer server = new StreamServer(new InetSocketAddress(_websocketHostUri, _websocketHostPort),
-					config, null, monitors);
+					config, null, connectors, watcher);
 			server.run();
 		} catch (Exception ex) {
 			System.out.println("error starting app, " + ex.getMessage());
@@ -175,7 +185,8 @@ public class StreamServer extends WebSocketServer implements IClientListener, IA
 	}
 
 	private ObjectMapper mapper = new ObjectMapper();
+	private TrackMonitor watcher = null;
 	private SentenceFactory sentenceFactory = new SentenceFactory();
-	private ArrayList<StreamClientMonitor> monitors = new ArrayList<>();
+	private ArrayList<StreamClientConnector> connectors = new ArrayList<>();
 	private ConfigLoader config = null;
 }

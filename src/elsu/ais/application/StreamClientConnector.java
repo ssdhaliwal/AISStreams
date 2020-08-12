@@ -15,7 +15,7 @@ import elsu.io.FileRolloverPeriodicityType;
 import elsu.support.ConfigLoader;
 import elsu.ais.resources.IClientListener;
 
-public class StreamClientMonitor extends Thread {
+public class StreamClientConnector extends Thread {
 
 	public String _hostUri = "";
 	public int _hostPort = 0;
@@ -39,7 +39,7 @@ public class StreamClientMonitor extends Thread {
 		
 	private List<IClientListener> _listeners = new ArrayList<>();
 
-	public StreamClientMonitor(ConfigLoader config, String connName,
+	public StreamClientConnector(ConfigLoader config, String connName,
 			String host, int port, String name, String id) throws Exception {
 		// load the config params
 		_hostUri = config.getProperty("application.services.service." + connName + ".attributes.key.site.host").toString();

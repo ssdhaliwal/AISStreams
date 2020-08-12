@@ -12,7 +12,7 @@ public class TrackCleanup extends Thread {
 
 	private List<ITrackListener> _listeners = new ArrayList<>();
 
-	public TrackCleanup(ConfigLoader config) throws Exception {
+	public TrackCleanup() {
 
 	}
 
@@ -28,7 +28,7 @@ public class TrackCleanup extends Thread {
 		_listeners.clear();
 	}
 
-	public void sendTrackRemove(String track) throws Exception {
+	public void sendTrackRemove(TrackStatus track) throws Exception {
 		for (ITrackListener listener : _listeners) {
 			listener.onTrackRemove(track);
 		}

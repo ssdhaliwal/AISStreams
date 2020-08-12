@@ -1,7 +1,9 @@
 package elsu.ais.resources;
 
+import elsu.ais.monitor.TrackStatus;
+
 public interface ITrackListener {
-	void onTrackRemove(String track);
-	void onTrackAdd(String track);
-	void onTrackUpdate(String track);
+	void onTrackRemove(TrackStatus track);
+	void onTrackAdd(TrackStatus track);
+	void onTrackUpdate(TrackStatus track);
 }
