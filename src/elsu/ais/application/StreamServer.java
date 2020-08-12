@@ -15,8 +15,9 @@ import elsu.base.IAISEventListener;
 import elsu.sentence.SentenceFactory;
 import elsu.ais.application.StreamClientMonitor;
 import elsu.ais.resources.IClientListener;
+import elsu.ais.resources.ITrackListener;
 
-public class StreamServer extends WebSocketServer implements IClientListener, IAISEventListener  {
+public class StreamServer extends WebSocketServer implements IClientListener, IAISEventListener, ITrackListener {
 
 	public StreamServer(InetSocketAddress address, ConfigLoader config, Object tracker,
 			ArrayList<StreamClientMonitor> monitors) {
@@ -83,7 +84,7 @@ public class StreamServer extends WebSocketServer implements IClientListener, IA
 	public void onStart() {
 		System.out.println("server started successfully");
 	}
-	
+
 	@Override
 	public void onAISError(Exception ex, Object o, String message) {
 		Thread.yield();
@@ -100,6 +101,21 @@ public class StreamServer extends WebSocketServer implements IClientListener, IA
 	public void onAISUpdate(Object o) {
 		Thread.yield();
 		broadcast("{\"message\": " + o + ", \"state\": \"update\"}");
+	}
+
+	@Override
+	public void onTrackRemove(String status) {
+		System.out.println("track remove; " + status);
+	}
+
+	@Override
+	public void onTrackAdd(String status) {
+		System.out.println("track add; " + status);
+	}
+
+	@Override
+	public void onTrackUpdate(String status) {
+		System.out.println("track update; " + status);
 	}
 
 	public static void main(String[] args) {
