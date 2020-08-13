@@ -10,9 +10,9 @@ import elsu.ais.messages.*;
 import elsu.ais.resources.ITrackListener;
 import elsu.support.ConfigLoader;
 
-public class TrackMonitor {
+public class TrackWatcher {
 
-	public TrackMonitor(ConfigLoader config) {
+	public TrackWatcher(ConfigLoader config) {
 		// initialize track cleaner
 	}
 
@@ -23,37 +23,46 @@ public class TrackMonitor {
 
 	public void processTrack(AISMessageBase message) {
 		TrackStatus status = null;
-
-		// only process position reports and status voyage data
-		if (message.getClass().isInstance(T1_PositionReportClassA.class)) {
-			status = TrackStatus.fromMessage(this, (T1_PositionReportClassA) message);
-		} else if (message.getClass().isInstance(T5_StaticAndVoyageRelatedData.class)) {
-			status = TrackStatus.fromMessage(this, (T5_StaticAndVoyageRelatedData) message);
-		} else if (message.getClass().isInstance(T18_StandardClassBEquipmentPositionReport.class)) {
-			status = TrackStatus.fromMessage(this, (T18_StandardClassBEquipmentPositionReport) message);
-		} else if (message.getClass().isInstance(T19_ExtendedClassBEquipmentPositionReport.class)) {
-			status = TrackStatus.fromMessage(this, (T19_ExtendedClassBEquipmentPositionReport) message);
-		} else if (message.getClass().isInstance(T9_StandardSARPositionReport.class)) {
-			status = TrackStatus.fromMessage(this, (T9_StandardSARPositionReport) message);
-		}
+		status = TrackStatus.fromMessage(this, message);
 		
 		// check and notify on status
-		
+		if (status != null) {
+			try {
+				TrackStatus cloneStatus = (TrackStatus)status.clone();
+				if (status.isUpdated()) {
+					sendTrackUpdate(cloneStatus);
+				} else {
+					sendTrackAdd(cloneStatus);
+				}
+			} catch (Exception ex) {
+				try {
+					sendTrackError(ex, message);
+				} catch (Exception exi) {
+					System.out.println("trackMonitor error; " + exi.getMessage() + "; " + message);
+				}
+			}
+		}
 	}
 
 	public TrackStatus isActive(int mmsi) {
 		return getTrackStatus().get(mmsi);
 	}
 
+	public void sendTrackError(Exception ex, AISMessageBase message) throws Exception {
+		for (ITrackListener listener : _listeners) {
+			listener.onTrackError(ex, message.toString());
+		}
+	}
+
 	public void sendTrackAdd(TrackStatus track) throws Exception {
 		for (ITrackListener listener : _listeners) {
-			listener.onTrackAdd(track);
+			listener.onTrackAdd(track.toJSONArray());
 		}
 	}
 
 	public void sendTrackUpdate(TrackStatus track) throws Exception {
 		for (ITrackListener listener : _listeners) {
-			listener.onTrackUpdate(track);
+			listener.onTrackUpdate(track.toJSONArray());
 		}
 	}
 

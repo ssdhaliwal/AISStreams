@@ -3,6 +3,7 @@ package elsu.ais.monitor;
 import java.util.ArrayList;
 import java.util.List;
 
+import elsu.ais.base.AISMessageBase;
 import elsu.ais.resources.ITrackListener;
 import elsu.support.ConfigLoader;
 
@@ -28,7 +29,13 @@ public class TrackCleanup extends Thread {
 		_listeners.clear();
 	}
 
-	public void sendTrackRemove(TrackStatus track) throws Exception {
+	public void sendTrackError(Exception ex, AISMessageBase message) throws Exception {
+		for (ITrackListener listener : _listeners) {
+			listener.onTrackError(ex, message.toString());
+		}
+	}
+
+	public void sendTrackRemove(String track) throws Exception {
 		for (ITrackListener listener : _listeners) {
 			listener.onTrackRemove(track);
 		}

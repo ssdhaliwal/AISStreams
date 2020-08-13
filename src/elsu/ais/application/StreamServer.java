@@ -8,22 +8,19 @@ import org.java_websocket.WebSocket;
 import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.server.WebSocketServer;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import elsu.support.ConfigLoader;
 import elsu.base.IAISEventListener;
 import elsu.sentence.SentenceFactory;
 import elsu.ais.application.StreamClientConnector;
 import elsu.ais.base.AISMessageBase;
-import elsu.ais.monitor.TrackMonitor;
-import elsu.ais.monitor.TrackStatus;
+import elsu.ais.monitor.TrackWatcher;
 import elsu.ais.resources.IClientListener;
 import elsu.ais.resources.ITrackListener;
 
 public class StreamServer extends WebSocketServer implements IClientListener, IAISEventListener, ITrackListener {
 
 	public StreamServer(InetSocketAddress address, ConfigLoader config, Object tracker,
-			ArrayList<StreamClientConnector> connectors, TrackMonitor watcher) {
+			ArrayList<StreamClientConnector> connectors, TrackWatcher watcher) {
 		super(address);
 
 		this.config = config;
@@ -110,19 +107,25 @@ public class StreamServer extends WebSocketServer implements IClientListener, IA
 	}
 
 	@Override
-	public void onTrackRemove(TrackStatus status) {
+	public void onTrackError(Exception ex, String message) {
+		System.out.println("track error; " + ex.getMessage() + "; "+ message);
+		broadcast("{\"message\": " + message + ", \"state\": \"error\"}");
+	}
+
+	@Override
+	public void onTrackRemove(String status) {
 		System.out.println("track remove; " + status);
 		broadcast("{\"message\": " + status + ", \"state\": \"remove\"}");
 	}
 
 	@Override
-	public void onTrackAdd(TrackStatus status) {
+	public void onTrackAdd(String status) {
 		System.out.println("track add; " + status);
 		broadcast("{\"message\": " + status + ", \"state\": \"add\"}");
 	}
 
 	@Override
-	public void onTrackUpdate(TrackStatus status) {
+	public void onTrackUpdate(String status) {
 		System.out.println("track update; " + status);
 		broadcast("{\"message\": " + status + ", \"state\": \"update\"}");
 	}
@@ -171,7 +174,7 @@ public class StreamServer extends WebSocketServer implements IClientListener, IA
 			}
 
 			// start the track monitor
-			TrackMonitor watcher = new TrackMonitor(config);
+			TrackWatcher watcher = new TrackWatcher(config);
 
 			// start websocket server
 			String _websocketHostUri = config.getProperty("application.services.key.websocket.host").toString();
@@ -186,8 +189,7 @@ public class StreamServer extends WebSocketServer implements IClientListener, IA
 		}
 	}
 
-	private ObjectMapper mapper = new ObjectMapper();
-	private TrackMonitor watcher = null;
+	private TrackWatcher watcher = null;
 	private SentenceFactory sentenceFactory = new SentenceFactory();
 	private ArrayList<StreamClientConnector> connectors = new ArrayList<>();
 	private ConfigLoader config = null;

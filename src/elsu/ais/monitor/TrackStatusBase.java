@@ -7,64 +7,6 @@ import elsu.ais.messages.data.*;
 public abstract class TrackStatusBase {
 
 	public TrackStatusBase() {
-
-	}
-
-	@Override
-	public String toString() {
-		StringBuilder buffer = new StringBuilder();
-
-		buffer.append("{");
-		buffer.append("\"transponder\":\"" + getTransponderType() + "\"");
-		buffer.append(", \"type\":" + getType());
-		buffer.append(", \"typeText\":\"" + AISLookupValues.getMessageType(getType()) + "\"");
-		buffer.append(", \"repeat\":" + getRepeat());
-		buffer.append(", \"mmsi\":" + getMmsi());
-		buffer.append(", \"status\":" + getStatus());
-		buffer.append(", \"statusText\":\"" + AISLookupValues.getNavigationStatus(getStatus()) + "\"");
-		buffer.append(", \"rateOfTurn\":" + getRateOfTurn());
-		buffer.append(", \"speed\":" + getSpeed());
-		buffer.append(", \"accuracy\":" + isAccuracy());
-		buffer.append(", \"longitude\":" + getLongitude());
-		buffer.append(", \"latitude\":" + getLatitude());
-		buffer.append(", \"course\":" + getCourse());
-		buffer.append(", \"heading\":" + getHeading());
-		buffer.append(", \"second\":" + getSecond());
-		buffer.append(", \"maneuver\":" + getManeuver());
-		buffer.append(", \"maneuverText\":\"" + AISLookupValues.getManeuverIndicator(getManeuver()) + "\"");
-		buffer.append(", \"raim\":" + isRaim());
-		buffer.append(", \"radio\":" + getRadio());
-		buffer.append(", \"commState\":" + getCommState());
-		buffer.append(", \"commtech\":\"" + AISLookupValues.getCommunicationTechnology(getType()) + "\"");
-		buffer.append(", \"aisVersion\":" + getAisVersion());
-		buffer.append(", \"imo\":" + getImo());
-		buffer.append(", \"callSign\":\"" + getCallSign().trim() + "\"");
-		buffer.append(", \"shipName\":\"" + getShipName().trim() + "\"");
-		buffer.append(", \"shipType\":" + getShipType());
-		buffer.append(", \"shipTypeText\":\"" + AISLookupValues.getShipType(getShipType()) + "\"");
-		buffer.append(", \"dimension\":" + getDimension());
-		buffer.append(", \"epfd\":" + getEpfd());
-		buffer.append(", \"epfdText\":\"" + AISLookupValues.getEPFDFixType(getEpfd()) + "\"");
-		buffer.append(", \"month\":" + getMonth());
-		buffer.append(", \"hour\":" + getHour());
-		buffer.append(", \"day\":" + getDay());
-		buffer.append(", \"minute\":" + getMinute());
-		buffer.append(", \"draught\":" + getDraught());
-		buffer.append(", \"destination\":\"" + getDestination().trim() + "\"");
-		buffer.append(", \"dte\":" + getDte());
-		buffer.append(", \"dteText\":\"" + AISLookupValues.getDte(getDte()) + "\"");
-		buffer.append(", \"regional\":" + getRegional());
-		buffer.append(", \"cs\":" + isCs());
-		buffer.append(", \"display\":" + isDisplay());
-		buffer.append(", \"dsc\":" + isDsc());
-		buffer.append(", \"band\":" + isBand());
-		buffer.append(", \"msg22\":" + isMsg22());
-		buffer.append(", \"assigned\":" + isAssigned());
-		buffer.append(", \"commFlag\":" + getCommFlag());
-		buffer.append(", \"commFlagText\":\"" + AISLookupValues.getCommunicationFlag(getCommFlag()) + "\"");
-		buffer.append("}");
-
-		return buffer.toString();
 	}
 
 	public void fromT1PositionReportClassA(T1_PositionReportClassA message) {
