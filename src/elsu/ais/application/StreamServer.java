@@ -14,6 +14,7 @@ import elsu.support.ConfigLoader;
 import elsu.base.IAISEventListener;
 import elsu.sentence.SentenceFactory;
 import elsu.ais.application.StreamClientConnector;
+import elsu.ais.base.AISMessageBase;
 import elsu.ais.monitor.TrackMonitor;
 import elsu.ais.monitor.TrackStatus;
 import elsu.ais.resources.IClientListener;
@@ -98,13 +99,14 @@ public class StreamServer extends WebSocketServer implements IClientListener, IA
 	@Override
 	public void onAISComplete(Object o) {
 		Thread.yield();
-		//broadcast("{\"message\": " + o + ", \"state\": \"new\"}");
+		// broadcast("{\"message\": " + o + ", \"state\": \"new\"}");
+		watcher.processTrack((AISMessageBase) o);
 	}
 
 	@Override
 	public void onAISUpdate(Object o) {
 		Thread.yield();
-		//broadcast("{\"message\": " + o + ", \"state\": \"update\"}");
+		// broadcast("{\"message\": " + o + ", \"state\": \"update\"}");
 	}
 
 	@Override
@@ -170,7 +172,7 @@ public class StreamServer extends WebSocketServer implements IClientListener, IA
 
 			// start the track monitor
 			TrackMonitor watcher = new TrackMonitor(config);
-			
+
 			// start websocket server
 			String _websocketHostUri = config.getProperty("application.services.key.websocket.host").toString();
 			int _websocketHostPort = Integer

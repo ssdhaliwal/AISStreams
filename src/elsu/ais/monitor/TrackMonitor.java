@@ -1,11 +1,12 @@
 package elsu.ais.monitor;
 
+import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
 import elsu.ais.base.AISMessageBase;
+import elsu.ais.messages.*;
 import elsu.ais.resources.ITrackListener;
 import elsu.support.ConfigLoader;
 
@@ -19,23 +20,29 @@ public class TrackMonitor {
 		this.addListener(listener);
 		getCleaner().addListener(listener);
 	}
-	
-	public void processTrack(AISMessageBase track) {
+
+	public void processTrack(AISMessageBase message) {
+		TrackStatus status = null;
+
 		// only process position reports and status voyage data
-		// check if mmsi exists, then update
-		// if new mmsi, add track
-	}
-	
-	private void addTrack(AISMessageBase track) {
+		if (message.getClass().isInstance(T1_PositionReportClassA.class)) {
+			status = TrackStatus.fromMessage(this, (T1_PositionReportClassA) message);
+		} else if (message.getClass().isInstance(T5_StaticAndVoyageRelatedData.class)) {
+			status = TrackStatus.fromMessage(this, (T5_StaticAndVoyageRelatedData) message);
+		} else if (message.getClass().isInstance(T18_StandardClassBEquipmentPositionReport.class)) {
+			status = TrackStatus.fromMessage(this, (T18_StandardClassBEquipmentPositionReport) message);
+		} else if (message.getClass().isInstance(T19_ExtendedClassBEquipmentPositionReport.class)) {
+			status = TrackStatus.fromMessage(this, (T19_ExtendedClassBEquipmentPositionReport) message);
+		} else if (message.getClass().isInstance(T9_StandardSARPositionReport.class)) {
+			status = TrackStatus.fromMessage(this, (T9_StandardSARPositionReport) message);
+		}
+		
+		// check and notify on status
 		
 	}
-	
-	private void updateTrack(AISMessageBase track) {
-		
-	}
-	
-	public TrackStatus isActive(AISMessageBase track) {
-		return null;
+
+	public TrackStatus isActive(int mmsi) {
+		return getTrackStatus().get(mmsi);
 	}
 
 	public void sendTrackAdd(TrackStatus track) throws Exception {
@@ -86,11 +93,11 @@ public class TrackMonitor {
 		this.trackStatus = trackStatus;
 	}
 
-	public HashMap<Integer, Date> getTrackLastReport() {
+	public HashMap<Integer, Instant> getTrackLastReport() {
 		return trackLastReport;
 	}
 
-	public void setTrackLastReport(HashMap<Integer, Date> trackLastReport) {
+	public void setTrackLastReport(HashMap<Integer, Instant> trackLastReport) {
 		this.trackLastReport = trackLastReport;
 	}
 
@@ -98,7 +105,7 @@ public class TrackMonitor {
 	private TrackCleanup cleaner = new TrackCleanup();
 
 	private List<ITrackListener> _listeners = new ArrayList<>();
-	
+
 	private HashMap<Integer, TrackStatus> trackStatus = new HashMap<Integer, TrackStatus>();
-	private HashMap<Integer, Date> trackLastReport = new HashMap<Integer, Date>();
+	private HashMap<Integer, Instant> trackLastReport = new HashMap<Integer, Instant>();
 }
