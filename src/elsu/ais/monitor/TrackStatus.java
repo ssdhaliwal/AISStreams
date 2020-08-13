@@ -8,7 +8,7 @@ import elsu.ais.messages.*;
 
 public class TrackStatus extends TrackStatusBase implements Cloneable {
 
-	public static TrackStatus fromMessage(TrackWatcher watcher, AISMessageBase message) {
+	public static TrackStatus fromMessage(TrackWatcher watcher, AISMessageBase message) throws Exception {
 		// only process position reports and status voyage data
 		if (message.getClass().isInstance(T1_PositionReportClassA.class)) {
 			return TrackStatus.fromMessage(watcher, (T1_PositionReportClassA) message);
@@ -21,12 +21,12 @@ public class TrackStatus extends TrackStatusBase implements Cloneable {
 		} else if (message.getClass().isInstance(T9_StandardSARPositionReport.class)) {
 			return TrackStatus.fromMessage(watcher, (T9_StandardSARPositionReport) message);
 		}
-		
+
 		// return null; if not valid message for parsing
 		return null;
 	}
-	
-	public static TrackStatus fromMessage(TrackWatcher watcher, T1_PositionReportClassA message) {
+
+	public static TrackStatus fromMessage(TrackWatcher watcher, T1_PositionReportClassA message) throws Exception {
 		TrackStatus status = null;
 
 		// if exists; lock and update
@@ -38,6 +38,9 @@ public class TrackStatus extends TrackStatusBase implements Cloneable {
 			synchronized (TrackStatus.class) {
 				status = new TrackStatus();
 				status.fromT1PositionReportClassA(message);
+
+				watcher.getTrackStatus().put(message.getMmsi(), status);
+				status = (TrackStatus) status.clone();
 			}
 		} else {
 			synchronized (status) {
@@ -45,12 +48,14 @@ public class TrackStatus extends TrackStatusBase implements Cloneable {
 				status.setUpdateTime();
 
 				status.fromT1PositionReportClassA(message);
+				status = (TrackStatus) status.clone();
 			}
 		}
 		return status;
 	}
 
-	public static TrackStatus fromMessage(TrackWatcher watcher, T5_StaticAndVoyageRelatedData message) {
+	public static TrackStatus fromMessage(TrackWatcher watcher, T5_StaticAndVoyageRelatedData message)
+			throws Exception {
 		TrackStatus status = null;
 
 		// if exists; lock and update
@@ -64,6 +69,7 @@ public class TrackStatus extends TrackStatusBase implements Cloneable {
 				status.fromT5StaticAndVoyageRelatedData(message);
 
 				watcher.getTrackStatus().put(message.getMmsi(), status);
+				status = (TrackStatus) status.clone();
 			}
 		} else {
 			synchronized (status) {
@@ -71,12 +77,14 @@ public class TrackStatus extends TrackStatusBase implements Cloneable {
 				status.setUpdateTime();
 
 				status.fromT5StaticAndVoyageRelatedData(message);
+				status = (TrackStatus) status.clone();
 			}
 		}
 		return status;
 	}
 
-	public static TrackStatus fromMessage(TrackWatcher watcher, T18_StandardClassBEquipmentPositionReport message) {
+	public static TrackStatus fromMessage(TrackWatcher watcher, T18_StandardClassBEquipmentPositionReport message)
+			throws Exception {
 		TrackStatus status = null;
 
 		// if exists; lock and update
@@ -88,6 +96,9 @@ public class TrackStatus extends TrackStatusBase implements Cloneable {
 			synchronized (TrackStatus.class) {
 				status = new TrackStatus();
 				status.fromT18StandardClassBEquipmentPositionReport(message);
+
+				watcher.getTrackStatus().put(message.getMmsi(), status);
+				status = (TrackStatus) status.clone();
 			}
 		} else {
 			synchronized (status) {
@@ -95,12 +106,14 @@ public class TrackStatus extends TrackStatusBase implements Cloneable {
 				status.setUpdateTime();
 
 				status.fromT18StandardClassBEquipmentPositionReport(message);
+				status = (TrackStatus) status.clone();
 			}
 		}
 		return status;
 	}
 
-	public static TrackStatus fromMessage(TrackWatcher watcher, T19_ExtendedClassBEquipmentPositionReport message) {
+	public static TrackStatus fromMessage(TrackWatcher watcher, T19_ExtendedClassBEquipmentPositionReport message)
+			throws Exception {
 		TrackStatus status = null;
 
 		// if exists; lock and update
@@ -112,6 +125,9 @@ public class TrackStatus extends TrackStatusBase implements Cloneable {
 			synchronized (TrackStatus.class) {
 				status = new TrackStatus();
 				status.fromT19ExtendedClassBEquipmentPositionReport(message);
+
+				watcher.getTrackStatus().put(message.getMmsi(), status);
+				status = (TrackStatus) status.clone();
 			}
 		} else {
 			synchronized (status) {
@@ -119,6 +135,7 @@ public class TrackStatus extends TrackStatusBase implements Cloneable {
 				status.setUpdateTime();
 
 				status.fromT19ExtendedClassBEquipmentPositionReport(message);
+				status = (TrackStatus) status.clone();
 			}
 		}
 
@@ -128,7 +145,7 @@ public class TrackStatus extends TrackStatusBase implements Cloneable {
 		return status;
 	}
 
-	public static TrackStatus fromMessage(TrackWatcher watcher, T9_StandardSARPositionReport message) {
+	public static TrackStatus fromMessage(TrackWatcher watcher, T9_StandardSARPositionReport message) throws Exception {
 		TrackStatus status = null;
 
 		// if exists; lock and update
@@ -140,6 +157,9 @@ public class TrackStatus extends TrackStatusBase implements Cloneable {
 			synchronized (TrackStatus.class) {
 				status = new TrackStatus();
 				status.fromT9StandardSARPositionReport(message);
+
+				watcher.getTrackStatus().put(message.getMmsi(), status);
+				status = (TrackStatus) status.clone();
 			}
 		} else {
 			synchronized (status) {
@@ -147,6 +167,7 @@ public class TrackStatus extends TrackStatusBase implements Cloneable {
 				status.setUpdateTime();
 
 				status.fromT9StandardSARPositionReport(message);
+				status = (TrackStatus) status.clone();
 			}
 		}
 		return status;

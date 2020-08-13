@@ -23,23 +23,31 @@ public class TrackWatcher {
 
 	public void processTrack(AISMessageBase message) {
 		TrackStatus status = null;
-		status = TrackStatus.fromMessage(this, message);
 		
-		// check and notify on status
-		if (status != null) {
-			try {
-				TrackStatus cloneStatus = (TrackStatus)status.clone();
-				if (status.isUpdated()) {
-					sendTrackUpdate(cloneStatus);
-				} else {
-					sendTrackAdd(cloneStatus);
-				}
-			} catch (Exception ex) {
+		try {
+			status = TrackStatus.fromMessage(this, message);
+			
+			// check and notify on status
+			if (status != null) {
 				try {
-					sendTrackError(ex, message);
-				} catch (Exception exi) {
-					System.out.println("trackMonitor error; " + exi.getMessage() + "; " + message);
+					if (status.isUpdated()) {
+						sendTrackUpdate(status);
+					} else {
+						sendTrackAdd(status);
+					}
+				} catch (Exception ex) {
+					try {
+						sendTrackError(ex, message);
+					} catch (Exception exi) {
+						System.out.println("trackWatcher notification error; " + exi.getMessage() + "; " + message);
+					}
 				}
+			}
+		} catch (Exception ex) {
+			try {
+				sendTrackError(ex, message);
+			} catch (Exception exi) {
+				System.out.println("trackWatcher parsing error; " + exi.getMessage() + "; " + message);
 			}
 		}
 	}
