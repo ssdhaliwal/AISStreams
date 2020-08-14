@@ -84,6 +84,7 @@ public abstract class TrackStatusBase {
 		setEpfd(message.getEpfd());
 		setRaim(message.isRaim());
 		setDte(message.getDte());
+		setAssignedMode(message.getAssignedMode());
 	}
 
 	public void fromT9StandardSARPositionReport(T9_StandardSARPositionReport message) {
@@ -354,6 +355,14 @@ public abstract class TrackStatusBase {
 		this.dte = dte;
 	}
 
+	public int getAssignedMode() {
+		return assignedMode;
+	}
+
+	public void setAssignedMode(int assignedMode) {
+		this.assignedMode = assignedMode;
+	}
+
 	public int getRegional() {
 		return regional;
 	}
@@ -467,6 +476,7 @@ public abstract class TrackStatusBase {
 	private float draught = 0;
 	private String destination = "";
 	private int dte = 1;
+	private int assignedMode = 0;
 
 	private int regional = 0;
 	private boolean cs = false;

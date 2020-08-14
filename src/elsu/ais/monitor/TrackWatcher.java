@@ -23,10 +23,10 @@ public class TrackWatcher {
 
 	public void processTrack(AISMessageBase message) {
 		TrackStatus status = null;
-		
+
 		try {
 			status = TrackStatus.fromMessage(this, message);
-			
+
 			// check and notify on status
 			if (status != null) {
 				try {
@@ -57,20 +57,32 @@ public class TrackWatcher {
 	}
 
 	public void sendTrackError(Exception ex, AISMessageBase message) throws Exception {
-		for (ITrackListener listener : _listeners) {
-			listener.onTrackError(ex, message.toString());
+		try {
+			for (ITrackListener listener : _listeners) {
+				listener.onTrackError(ex, message.toString());
+			}
+		} catch (Exception exi) {
+			System.out.println("trackWatcher sendTrackError; " + exi.getMessage() + "; " + message);
 		}
 	}
 
 	public void sendTrackAdd(TrackStatus track) throws Exception {
-		for (ITrackListener listener : _listeners) {
-			listener.onTrackAdd(track.toJSONArray());
+		try {
+			for (ITrackListener listener : _listeners) {
+				listener.onTrackAdd(track.toJSONArray());
+			}
+		} catch (Exception exi) {
+			System.out.println("trackWatcher sendTrackAdd; " + exi.getMessage() + "; " + track);
 		}
 	}
 
 	public void sendTrackUpdate(TrackStatus track) throws Exception {
-		for (ITrackListener listener : _listeners) {
-			listener.onTrackUpdate(track.toJSONArray());
+		try {
+			for (ITrackListener listener : _listeners) {
+				listener.onTrackUpdate(track.toJSONArray());
+			}
+		} catch (Exception exi) {
+			System.out.println("trackWatcher sendTrackUpdate; " + exi.getMessage() + "; " + track);
 		}
 	}
 

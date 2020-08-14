@@ -223,6 +223,7 @@ public class TrackStatus extends TrackStatusBase implements Cloneable {
 		buffer.append(", \"destination\":\"" + getDestination().trim() + "\"");
 		buffer.append(", \"dte\":" + getDte());
 		buffer.append(", \"dteText\":\"" + AISLookupValues.getDte(getDte()) + "\"");
+		buffer.append(", \"assignedMode\":" + getAssignedMode());
 		buffer.append(", \"regional\":" + getRegional());
 		buffer.append(", \"cs\":" + isCs());
 		buffer.append(", \"display\":" + isDisplay());
@@ -281,6 +282,7 @@ public class TrackStatus extends TrackStatusBase implements Cloneable {
 		buffer.append(", \"" + getDestination().trim() + "\"");
 		buffer.append(", " + getDte());
 		buffer.append(", \"" + AISLookupValues.getDte(getDte()) + "\"");
+		buffer.append(", " + getAssignedMode());
 		buffer.append(", " + getRegional());
 		buffer.append(", " + isCs());
 		buffer.append(", " + isDisplay());
