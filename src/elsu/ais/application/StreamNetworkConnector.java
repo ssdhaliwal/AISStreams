@@ -13,9 +13,9 @@ import elsu.common.GlobalStack;
 import elsu.io.FileChannelTextWriter;
 import elsu.io.FileRolloverPeriodicityType;
 import elsu.support.ConfigLoader;
-import elsu.ais.resources.IClientListener;
+import elsu.ais.resources.IMessageListener;
 
-public class StreamClientConnector extends Thread {
+public class StreamNetworkConnector extends Thread {
 
 	public String _hostUri = "";
 	public int _hostPort = 0;
@@ -37,9 +37,9 @@ public class StreamClientConnector extends Thread {
 	private String _fileMask = "";
 	private volatile FileChannelTextWriter _messageWriter = null;
 		
-	private List<IClientListener> _listeners = new ArrayList<>();
+	private List<IMessageListener> _listeners = new ArrayList<>();
 
-	public StreamClientConnector(ConfigLoader config, String connName,
+	public StreamNetworkConnector(ConfigLoader config, String connName,
 			String host, int port, String name, String id) throws Exception {
 		// load the config params
 		_hostUri = config.getProperty("application.services.service." + connName + ".attributes.key.site.host").toString();
@@ -62,7 +62,7 @@ public class StreamClientConnector extends Thread {
 		}
 		
 		System.out.println("client config loaded, " +
-			"hostUri: " + _hostUri + ", " +
+			"_hostUri: " + _hostUri + ", " +
 			"_hostPort: " + _hostPort + ", " +
 			"_noDataTimeout: " + _noDataTimeout + ", " +
 			"_retryWaitTime: " + _retryWaitTime + ", " +
@@ -90,12 +90,12 @@ public class StreamClientConnector extends Thread {
 		this._messageWriter.setRolloverFrequency(_rolloverFrequency);
 	}
 
-	public void addListener(IClientListener listener) {
+	public void addListener(IMessageListener listener) {
 		_listeners.add(listener);
 		listener.onMessage(_siteId, "client event listener added to notification list");
 	}
 	
-	public void removeListener(IClientListener listener) {
+	public void removeListener(IMessageListener listener) {
 		listener.onMessage(_siteId, "client event listener removed from notification list");
 		_listeners.remove(listener);
 	}
@@ -107,21 +107,17 @@ public class StreamClientConnector extends Thread {
 		_listeners.clear();
 	}
 
-	public boolean sendError(String error) throws Exception {
-		boolean retryConnection = false;
-
+	public void sendError(String error) throws Exception {
 		this._messageWriter.write(error);
-		for (IClientListener listener : _listeners) {
-			retryConnection = listener.onError(this._siteId + ", error, " + error);
+		for (IMessageListener listener : _listeners) {
+			listener.onError(this._siteId + ", error, " + error);
 		}
-
-		return retryConnection;
 	}
 
 	public void sendMessage(String message) throws Exception {
 		_messageWriter.write(message + GlobalStack.LINESEPARATOR);
 		
-		for (IClientListener listener : _listeners) {
+		for (IMessageListener listener : _listeners) {
 			listener.onMessage(_siteId, message);
 		}
 	}
@@ -130,7 +126,6 @@ public class StreamClientConnector extends Thread {
 	public void run() {
 		// TODO Auto-generated method stub
 		try {
-			boolean retryConnection = false;
 			Thread tMonitor = null;
 
 			while (!_isShutdown) {
@@ -141,9 +136,9 @@ public class StreamClientConnector extends Thread {
 						_clientSocket = new Socket(_hostUri, _hostPort);
 						_isRunning = true;
 					} catch (Exception exi) {
-						retryConnection = sendError("client socket error, " + exi.getMessage());
+						sendError("client socket error, " + exi.getMessage());
 					} finally {
-						if (!_isRunning && retryConnection) {
+						if (!_isRunning && !_isShutdown) {
 							try {
 								Thread.sleep(_retryWaitTime);
 							} catch (Exception exi) {

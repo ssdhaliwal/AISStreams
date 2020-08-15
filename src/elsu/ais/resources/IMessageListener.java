@@ -1,6 +1,6 @@
 package elsu.ais.resources;
 
-public interface IClientListener {
+public interface IMessageListener {
 	void onMessage(String siteId, String message);
-    boolean onError(String error);
+    void onError(String error);
 }

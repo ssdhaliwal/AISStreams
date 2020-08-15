@@ -11,16 +11,16 @@ import org.java_websocket.server.WebSocketServer;
 import elsu.support.ConfigLoader;
 import elsu.base.IAISEventListener;
 import elsu.sentence.SentenceFactory;
-import elsu.ais.application.StreamClientConnector;
+import elsu.ais.application.StreamNetworkConnector;
 import elsu.ais.base.AISMessageBase;
 import elsu.ais.monitor.TrackWatcher;
-import elsu.ais.resources.IClientListener;
+import elsu.ais.resources.IMessageListener;
 import elsu.ais.resources.ITrackListener;
 
-public class StreamServer extends WebSocketServer implements IClientListener, IAISEventListener, ITrackListener {
+public class StreamServer extends WebSocketServer implements IMessageListener, IAISEventListener, ITrackListener {
 
 	public StreamServer(InetSocketAddress address, ConfigLoader config, Object tracker,
-			ArrayList<StreamClientConnector> connectors, TrackWatcher watcher) {
+			ArrayList<StreamNetworkConnector> connectors, TrackWatcher watcher) {
 		super(address);
 
 		this.config = config;
@@ -30,7 +30,7 @@ public class StreamServer extends WebSocketServer implements IClientListener, IA
 		// connect all monitors to the tracker
 		getSentenceFactory().addEventListener(this);
 		this.watcher.registerListener(this);
-		for (StreamClientConnector monitor : this.connectors) {
+		for (StreamNetworkConnector monitor : this.connectors) {
 			monitor.addListener(this);
 		}
 	}
@@ -49,9 +49,8 @@ public class StreamServer extends WebSocketServer implements IClientListener, IA
 	}
 
 	@Override
-	public boolean onError(String error) {
+	public void onError(String error) {
 		System.out.println("client error, " + error);
-		return false;
 	}
 
 	@Override
@@ -133,8 +132,8 @@ public class StreamServer extends WebSocketServer implements IClientListener, IA
 	public static void main(String[] args) {
 		// load the app config
 		ConfigLoader config = null;
-		StreamClientConnector cmdConnector = null;
-		ArrayList<StreamClientConnector> connectors = new ArrayList<>();
+		StreamNetworkConnector cmdConnector = null;
+		ArrayList<StreamNetworkConnector> connectors = new ArrayList<>();
 
 		try {
 			config = new ConfigLoader("config/app.config", null);
@@ -153,12 +152,12 @@ public class StreamServer extends WebSocketServer implements IClientListener, IA
 				name = args[2];
 				id = args[3];
 
-				cmdConnector = new StreamClientConnector(config, "", host, port, name, id);
+				cmdConnector = new StreamNetworkConnector(config, "", host, port, name, id);
 				cmdConnector.start();
 
 				connectors.add(cmdConnector);
 			} else if (args.length > 0) {
-				throw new Exception("invalid arguments: java -jar ./AISStreamServer.jar host%s port%i name%s id%s");
+				throw new Exception("invalid arguments: \n\njava -jar ./AISStreamServer.jar host%s port%i name%s id%s\n(or)\njava -jar ./AISStreamServer.jar file file_full_path%s speed_ms%i");
 			}
 
 			// if host is empty; then connect to default config
@@ -166,7 +165,7 @@ public class StreamServer extends WebSocketServer implements IClientListener, IA
 				String connectionList = config.getProperty("application.services.activeList").toString();
 				String[] connections = connectionList.split(",");
 				for (String connection : connections) {
-					cmdConnector = new StreamClientConnector(config, connection, "", 0, "", "");
+					cmdConnector = new StreamNetworkConnector(config, connection, "", 0, "", "");
 					cmdConnector.start();
 
 					connectors.add(cmdConnector);
@@ -191,6 +190,6 @@ public class StreamServer extends WebSocketServer implements IClientListener, IA
 
 	private TrackWatcher watcher = null;
 	private SentenceFactory sentenceFactory = new SentenceFactory();
-	private ArrayList<StreamClientConnector> connectors = new ArrayList<>();
+	private ArrayList<StreamNetworkConnector> connectors = new ArrayList<>();
 	private ConfigLoader config = null;
 }
