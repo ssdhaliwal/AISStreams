@@ -15,7 +15,7 @@ import elsu.io.FileRolloverPeriodicityType;
 import elsu.support.ConfigLoader;
 import elsu.ais.resources.IMessageListener;
 
-public class StreamNetworkConnector extends Thread {
+public class StreamNetworkConnector extends ConnectorBase {
 
 	public String _hostUri = "";
 	public int _hostPort = 0;
@@ -41,20 +41,19 @@ public class StreamNetworkConnector extends Thread {
 
 	public StreamNetworkConnector(ConfigLoader config, String connName,
 			String host, int port, String name, String id) throws Exception {
-		// load the config params
-		_hostUri = config.getProperty("application.services.service." + connName + ".attributes.key.site.host").toString();
-		_hostPort = Integer.parseInt(config.getProperty("application.services.service." + connName + ".attributes.key.site.port").toString());
-		_noDataTimeout = Integer.parseInt(config.getProperty("application.services.service." + connName + ".attributes.key.monitor.noDataTimeout").toString());
-		_retryWaitTime = Integer.parseInt(config.getProperty("application.services.service." + connName + ".attributes.key.monitor.idleTimeout").toString());
-		_localStoreMask = config.getProperty("application.services.service." + connName + ".attributes.key.localStore.mask").toString();
-		_localStorePath = config.getProperty("application.services.service." + connName + ".attributes.key.localStore.directory").toString();
-		_rolloverFrequency = Integer.parseInt(config.getProperty("application.services.service." + connName + ".attributes.key.log.rollover.frequency").toString());
-		_rolloverPeriodicity = FileRolloverPeriodicityType.valueOf(config.getProperty("application.services.service." + connName + ".attributes.key.log.rollover.periodicity").toString());
-		_siteId = config.getProperty("application.services.service." + connName + ".attributes.key.site.id").toString();
-		_siteName = config.getProperty("application.services.service." + connName + ".attributes.key.site.name").toString();
-		
-		// override from constructor
-		if (connName == "") {
+		// load the config params else override from constructor
+		if (connName != null) {
+			_hostUri = config.getProperty("application.services.service." + connName + ".attributes.key.site.host").toString();
+			_hostPort = Integer.parseInt(config.getProperty("application.services.service." + connName + ".attributes.key.site.port").toString());
+			_noDataTimeout = Integer.parseInt(config.getProperty("application.services.service." + connName + ".attributes.key.monitor.noDataTimeout").toString());
+			_retryWaitTime = Integer.parseInt(config.getProperty("application.services.service." + connName + ".attributes.key.monitor.idleTimeout").toString());
+			_localStoreMask = config.getProperty("application.services.service." + connName + ".attributes.key.localStore.mask").toString();
+			_localStorePath = config.getProperty("application.services.service." + connName + ".attributes.key.localStore.directory").toString();
+			_rolloverFrequency = Integer.parseInt(config.getProperty("application.services.service." + connName + ".attributes.key.log.rollover.frequency").toString());
+			_rolloverPeriodicity = FileRolloverPeriodicityType.valueOf(config.getProperty("application.services.service." + connName + ".attributes.key.log.rollover.periodicity").toString());
+			_siteId = config.getProperty("application.services.service." + connName + ".attributes.key.site.id").toString();
+			_siteName = config.getProperty("application.services.service." + connName + ".attributes.key.site.name").toString();
+		} else {
 			_hostUri = host;
 			_hostPort = port;
 			_siteName = name;
@@ -90,36 +89,16 @@ public class StreamNetworkConnector extends Thread {
 		this._messageWriter.setRolloverFrequency(_rolloverFrequency);
 	}
 
-	public void addListener(IMessageListener listener) {
-		_listeners.add(listener);
-		listener.onMessage(_siteId, "client event listener added to notification list");
-	}
-	
-	public void removeListener(IMessageListener listener) {
-		listener.onMessage(_siteId, "client event listener removed from notification list");
-		_listeners.remove(listener);
-	}
-	
-	public void clearListeners() {
-		try {
-			sendMessage("client event listener removed from notification list");
-		} catch (Exception ex2) { }
-		_listeners.clear();
-	}
-
 	public void sendError(String error) throws Exception {
 		this._messageWriter.write(error);
-		for (IMessageListener listener : _listeners) {
-			listener.onError(this._siteId + ", error, " + error);
-		}
+		
+		super.sendError(error);
 	}
 
 	public void sendMessage(String message) throws Exception {
 		_messageWriter.write(message + GlobalStack.LINESEPARATOR);
 		
-		for (IMessageListener listener : _listeners) {
-			listener.onMessage(_siteId, message);
-		}
+		super.sendMessage(message);
 	}
 
 	@Override

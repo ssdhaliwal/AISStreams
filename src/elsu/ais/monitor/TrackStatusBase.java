@@ -14,6 +14,7 @@ public abstract class TrackStatusBase {
 		setType(message.getType());
 		setRepeat(message.getRepeat());
 		setMmsi(message.getMmsi());
+
 		setStatus(message.getStatus());
 		setRateOfTurn(message.getRateOfTurn());
 		setSpeed(message.getSpeed());
@@ -30,6 +31,10 @@ public abstract class TrackStatusBase {
 	}
 
 	public void fromT5StaticAndVoyageRelatedData(T5_StaticAndVoyageRelatedData message) {
+		setType(message.getType());
+		setRepeat(message.getRepeat());
+		setMmsi(message.getMmsi());
+
 		setAisVersion(message.getAisVersion());
 		setImo(message.getImo());
 		setCallSign(message.getCallSign());
@@ -48,6 +53,10 @@ public abstract class TrackStatusBase {
 
 	public void fromT18StandardClassBEquipmentPositionReport(T18_StandardClassBEquipmentPositionReport message) {
 		setTransponderType(message.getTransponderType());
+		setType(message.getType());
+		setRepeat(message.getRepeat());
+		setMmsi(message.getMmsi());
+
 		setSpeed(message.getSpeed());
 		setAccuracy(message.isAccuracy());
 		setLongitude(message.getLongitude());
@@ -70,6 +79,10 @@ public abstract class TrackStatusBase {
 
 	public void fromT19ExtendedClassBEquipmentPositionReport(T19_ExtendedClassBEquipmentPositionReport message) {
 		setTransponderType(message.getTransponderType());
+		setType(message.getType());
+		setRepeat(message.getRepeat());
+		setMmsi(message.getMmsi());
+
 		setSpeed(message.getSpeed());
 		setAccuracy(message.isAccuracy());
 		setLongitude(message.getLongitude());
@@ -88,6 +101,10 @@ public abstract class TrackStatusBase {
 	}
 
 	public void fromT9StandardSARPositionReport(T9_StandardSARPositionReport message) {
+		setType(message.getType());
+		setRepeat(message.getRepeat());
+		setMmsi(message.getMmsi());
+
 		setAltitude(message.getAltitude());
 		setSpeed(message.getSpeed());
 		setAccuracy(message.isAccuracy());

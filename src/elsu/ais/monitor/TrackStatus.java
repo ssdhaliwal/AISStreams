@@ -1,6 +1,6 @@
 package elsu.ais.monitor;
 
-import java.time.Instant;
+import org.joda.time.*;
 
 import elsu.ais.base.AISLookupValues;
 import elsu.ais.base.AISMessageBase;
@@ -10,15 +10,15 @@ public class TrackStatus extends TrackStatusBase implements Cloneable {
 
 	public static TrackStatus fromMessage(TrackWatcher watcher, AISMessageBase message) throws Exception {
 		// only process position reports and status voyage data
-		if (message.getClass().isInstance(T1_PositionReportClassA.class)) {
+		if (message instanceof T1_PositionReportClassA) {
 			return TrackStatus.fromMessage(watcher, (T1_PositionReportClassA) message);
-		} else if (message.getClass().isInstance(T5_StaticAndVoyageRelatedData.class)) {
+		} else if (message instanceof T5_StaticAndVoyageRelatedData) {
 			return TrackStatus.fromMessage(watcher, (T5_StaticAndVoyageRelatedData) message);
-		} else if (message.getClass().isInstance(T18_StandardClassBEquipmentPositionReport.class)) {
+		} else if (message instanceof T18_StandardClassBEquipmentPositionReport) {
 			return TrackStatus.fromMessage(watcher, (T18_StandardClassBEquipmentPositionReport) message);
-		} else if (message.getClass().isInstance(T19_ExtendedClassBEquipmentPositionReport.class)) {
+		} else if (message instanceof T19_ExtendedClassBEquipmentPositionReport) {
 			return TrackStatus.fromMessage(watcher, (T19_ExtendedClassBEquipmentPositionReport) message);
-		} else if (message.getClass().isInstance(T9_StandardSARPositionReport.class)) {
+		} else if (message instanceof T9_StandardSARPositionReport) {
 			return TrackStatus.fromMessage(watcher, (T9_StandardSARPositionReport) message);
 		}
 
