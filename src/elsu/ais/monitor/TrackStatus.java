@@ -1,7 +1,5 @@
 package elsu.ais.monitor;
 
-import org.joda.time.*;
-
 import elsu.ais.base.AISLookupValues;
 import elsu.ais.base.AISMessageBase;
 import elsu.ais.messages.*;
@@ -9,21 +7,26 @@ import elsu.ais.messages.*;
 public class TrackStatus extends TrackStatusBase implements Cloneable {
 
 	public static TrackStatus fromMessage(TrackWatcher watcher, AISMessageBase message) throws Exception {
+		TrackStatus status = null;
+				
 		// only process position reports and status voyage data
 		if (message instanceof T1_PositionReportClassA) {
-			return TrackStatus.fromMessage(watcher, (T1_PositionReportClassA) message);
+			status = TrackStatus.fromMessage(watcher, (T1_PositionReportClassA) message);
 		} else if (message instanceof T5_StaticAndVoyageRelatedData) {
-			return TrackStatus.fromMessage(watcher, (T5_StaticAndVoyageRelatedData) message);
+			status = TrackStatus.fromMessage(watcher, (T5_StaticAndVoyageRelatedData) message);
 		} else if (message instanceof T18_StandardClassBEquipmentPositionReport) {
-			return TrackStatus.fromMessage(watcher, (T18_StandardClassBEquipmentPositionReport) message);
+			status = TrackStatus.fromMessage(watcher, (T18_StandardClassBEquipmentPositionReport) message);
 		} else if (message instanceof T19_ExtendedClassBEquipmentPositionReport) {
-			return TrackStatus.fromMessage(watcher, (T19_ExtendedClassBEquipmentPositionReport) message);
+			status = TrackStatus.fromMessage(watcher, (T19_ExtendedClassBEquipmentPositionReport) message);
 		} else if (message instanceof T9_StandardSARPositionReport) {
-			return TrackStatus.fromMessage(watcher, (T9_StandardSARPositionReport) message);
+			status = TrackStatus.fromMessage(watcher, (T9_StandardSARPositionReport) message);
 		}
 
 		// return null; if not valid message for parsing
-		return null;
+		if (status != null) {
+			status.clearIdleCounter();
+		}
+		return status;
 	}
 
 	public static TrackStatus fromMessage(TrackWatcher watcher, T1_PositionReportClassA message) throws Exception {
@@ -51,6 +54,7 @@ public class TrackStatus extends TrackStatusBase implements Cloneable {
 				status = (TrackStatus) status.clone();
 			}
 		}
+		
 		return status;
 	}
 
@@ -139,9 +143,6 @@ public class TrackStatus extends TrackStatusBase implements Cloneable {
 			}
 		}
 
-		synchronized (watcher) {
-			watcher.getTrackLastReport().put(message.getMmsi(), Instant.now());
-		}
 		return status;
 	}
 
@@ -298,36 +299,4 @@ public class TrackStatus extends TrackStatusBase implements Cloneable {
 
 		return buffer.toString();
 	}
-
-	public boolean isUpdated() {
-		return updated;
-	}
-
-	public void setUpdated(boolean updated) {
-		this.updated = updated;
-	}
-
-	public Instant getUpdateTime() {
-		return updateTime;
-	}
-
-	public void setUpdateTime() {
-		this.updateTime = Instant.now();
-	}
-
-	public int getIdleCounter() {
-		return idleCounter;
-	}
-
-	public void setIdleCounter() {
-		this.idleCounter++;
-	}
-
-	public void clearIdleCounter() {
-		this.idleCounter = 0;
-	}
-
-	private boolean updated = false;
-	private Instant updateTime = Instant.now();
-	private int idleCounter = 0;
 }

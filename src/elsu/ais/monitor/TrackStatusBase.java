@@ -1,6 +1,7 @@
 package elsu.ais.monitor;
 
-import elsu.ais.base.AISLookupValues;
+import org.joda.time.Instant;
+
 import elsu.ais.messages.*;
 import elsu.ais.messages.data.*;
 
@@ -460,20 +461,48 @@ public abstract class TrackStatusBase {
 		this.altitude = altitude;
 	}
 
+	public boolean isUpdated() {
+		return updated;
+	}
+
+	public void setUpdated(boolean updated) {
+		this.updated = updated;
+	}
+
+	public Instant getUpdateTime() {
+		return updateTime;
+	}
+
+	public void setUpdateTime() {
+		this.updateTime = Instant.now();
+	}
+
+	public int getIdleCounter() {
+		return idleCounter;
+	}
+
+	public void setIdleCounter() {
+		this.idleCounter++;
+	}
+
+	public void clearIdleCounter() {
+		this.idleCounter = 0;
+	}
+
 	private String transponderType = "";
 
 	private int type = 0;
 	private int repeat = 0;
 	private int mmsi = 0;
-	private int status = 0;
+	private int status = 15;
 	private double rateOfTurn = 0;
-	private float speed = 0.0f;
+	private float speed = 102.3f;
 	private boolean accuracy = false;
-	private float longitude = 0f;
-	private float latitude = 0f;
-	private float course = 0.0f;
-	private int heading = 0;
-	private int second = 0;
+	private float longitude = 181f;
+	private float latitude = 91f;
+	private float course = 360.0f;
+	private int heading = 511;
+	private int second = 60;
 	private int maneuver = 0;
 	private boolean raim = false;
 	private int radio = 0;
@@ -488,8 +517,8 @@ public abstract class TrackStatusBase {
 	private int epfd = 0;
 	private int month = 0;
 	private int day = 0;
-	private int hour = 0;
-	private int minute = 0;
+	private int hour = 24;
+	private int minute = 60;
 	private float draught = 0;
 	private String destination = "";
 	private int dte = 1;
@@ -504,6 +533,10 @@ public abstract class TrackStatusBase {
 	private boolean assigned = false;
 	private int commFlag = 0;
 
-	private int altitude = 0;
+	private int altitude = 4095;
 	private int altitudeSensor = 0;
+
+	private boolean updated = false;
+	private Instant updateTime = Instant.now();
+	private int idleCounter = 0;
 }

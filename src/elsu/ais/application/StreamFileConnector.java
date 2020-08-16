@@ -11,23 +11,23 @@ import elsu.ais.resources.IMessageListener;
 
 public class StreamFileConnector extends ConnectorBase {
 
-	public String _filename = "";
-	public int _speed = 100;
-	public boolean _isShutdown = false;
+	public String filename = "";
+	public int speed = 100;
+	public boolean isShutdown = false;
 
 	public StreamFileConnector(ConfigLoader config, String connName, String filename, int speed) throws Exception {
 		// load the config params else override from constructor
 		if (connName != null) {
-			_filename = config.getProperty("application.services.service." + connName + ".attributes.key.filename").toString();
-			_speed = Integer.parseInt(config.getProperty("application.services.service." + connName + ".attributes.key.speed").toString());
+			this.filename = config.getProperty("application.services.service." + connName + ".attributes.key.filename").toString();
+			this.speed = Integer.parseInt(config.getProperty("application.services.service." + connName + ".attributes.key.speed").toString());
 		} else {
-			_filename = filename;
-			_speed = speed;
+			this.filename = filename;
+			this.speed = speed;
 		}
 		
 		System.out.println("client config loaded, " +
-			"_filename: " + _filename + ", " +
-			"_speed: " + _speed);
+			"filename: " + filename + ", " +
+			"speed: " + speed);
 	}
 
 	@Override
@@ -35,12 +35,12 @@ public class StreamFileConnector extends ConnectorBase {
 		// TODO Auto-generated method stub
 		try {
 			// read the file in memory
-			ArrayList<String> fileData = FileUtils.readFileToList(_filename);
+			ArrayList<String> fileData = FileUtils.readFileToList(filename);
 			
 			// until shutdown
 			String line = "";
 			int i = 0;
-			while (!_isShutdown) {
+			while (!isShutdown) {
 				// loop and send file data
 				if (i < fileData.size()) {
 					line = fileData.get(i);
@@ -51,24 +51,24 @@ public class StreamFileConnector extends ConnectorBase {
 					i = -1;
 				}
 				
-				Thread.sleep(_speed);
+				Thread.sleep(speed);
 				i++;
 			}
 		} catch (Exception ex) {
 			// log error for tracking
 			try {
-				sendError("client socket error, " + ex.getMessage());
+				sendError("file, " + ex.getMessage());
 			} catch (Exception ex2) {
-				System.out.println("error, " + "file" + ", client socket error, " + ex2.getMessage());
+				System.out.println("error, " + "file" + ", " + ex2.getMessage());
 			}
 		} finally {
-			this._isShutdown = true;
+			isShutdown = true;
 
 			// log message
 			try {
-				sendMessage("client socket closed - shutdown.");
+				sendMessage("file closed - shutdown.");
 			} catch (Exception ex2) {
-				System.out.println("error, " + "file" + ", client socket error, " + ex2.getMessage());
+				System.out.println("error, " + "file" + ", " + ex2.getMessage());
 			}
 		}
 	}

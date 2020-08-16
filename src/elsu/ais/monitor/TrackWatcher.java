@@ -1,6 +1,5 @@
 package elsu.ais.monitor;
 
-import org.joda.time.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -13,6 +12,25 @@ public class TrackWatcher {
 
 	public TrackWatcher(ConfigLoader config) {
 		// initialize track cleaner
+		initialize(config);
+	}
+	
+	private void initialize(ConfigLoader config) {
+		try {
+			latencyCleanupTime = Integer.parseInt(config.getProperty("application.services.key.latency.cleanup.time").toString());
+		} catch (Exception ex) {
+			latencyCleanupTime = 60000;
+		}
+
+		try {
+			latencyCleanupSpan = Integer.parseInt(config.getProperty("application.services.key.latency.cleanup.span").toString());
+		} catch (Exception ex) {
+			latencyCleanupSpan = 5;
+		}
+		
+		// start the cleaner thread
+		cleaner = new TrackCleanup(latencyCleanupTime, latencyCleanupSpan, this);
+		cleaner.start();
 	}
 
 	public void registerListener(ITrackListener listener) {
@@ -85,6 +103,10 @@ public class TrackWatcher {
 		}
 	}
 
+	public int getLatencyCleanupTime() {
+		return latencyCleanupTime;
+	}
+	
 	public TrackStatus getTrackker() {
 		return trackker;
 	}
@@ -121,19 +143,12 @@ public class TrackWatcher {
 		this.trackStatus = trackStatus;
 	}
 
-	public HashMap<Integer, Instant> getTrackLastReport() {
-		return trackLastReport;
-	}
-
-	public void setTrackLastReport(HashMap<Integer, Instant> trackLastReport) {
-		this.trackLastReport = trackLastReport;
-	}
-
+	private int latencyCleanupSpan = 5;
+	private int latencyCleanupTime = 60000;
 	private TrackStatus trackker = new TrackStatus();
-	private TrackCleanup cleaner = new TrackCleanup();
+	private TrackCleanup cleaner = null;
 
 	private List<ITrackListener> _listeners = new ArrayList<>();
 
 	private HashMap<Integer, TrackStatus> trackStatus = new HashMap<Integer, TrackStatus>();
-	private HashMap<Integer, Instant> trackLastReport = new HashMap<Integer, Instant>();
 }
