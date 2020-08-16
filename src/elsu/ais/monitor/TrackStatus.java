@@ -235,6 +235,7 @@ public class TrackStatus extends TrackStatusBase implements Cloneable {
 		buffer.append(", \"commFlag\":" + getCommFlag());
 		buffer.append(", \"commFlagText\":\"" + AISLookupValues.getCommunicationFlag(getCommFlag()) + "\"");
 		buffer.append(", \"updated\":" + isUpdated());
+		buffer.append(", \"Removed\":" + isRemoved());
 		buffer.append(", \"updateTime\":" + getUpdateTime());
 		buffer.append("}");
 
@@ -294,6 +295,7 @@ public class TrackStatus extends TrackStatusBase implements Cloneable {
 		buffer.append(", " + getCommFlag());
 		buffer.append(", \"" + AISLookupValues.getCommunicationFlag(getCommFlag()) + "\"");
 		buffer.append(", " + isUpdated());
+		buffer.append(", " + isRemoved());
 		buffer.append(", " + getUpdateTime());
 		buffer.append("]");
 

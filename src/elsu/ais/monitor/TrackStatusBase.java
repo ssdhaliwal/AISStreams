@@ -469,6 +469,14 @@ public abstract class TrackStatusBase {
 		this.updated = updated;
 	}
 
+	public boolean isRemoved() {
+		return removed;
+	}
+
+	public void setRemoved(boolean removed) {
+		this.removed = removed;
+	}
+
 	public Instant getUpdateTime() {
 		return updateTime;
 	}
@@ -537,6 +545,7 @@ public abstract class TrackStatusBase {
 	private int altitudeSensor = 0;
 
 	private boolean updated = false;
+	private boolean removed = false;
 	private Instant updateTime = Instant.now();
 	private int idleCounter = 0;
 }

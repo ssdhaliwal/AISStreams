@@ -83,6 +83,8 @@ public class TrackCleanup extends Thread {
 									status = watcher.getTrackStatus().get(mmsi);
 									
 									if (status.getIdleCounter() > cleanupSpan) {
+										status.setRemoved(true);
+										
 										watcher.getTrackStatus().remove(mmsi);
 										sendTrackRemove(status.toJSONArray());
 									}
