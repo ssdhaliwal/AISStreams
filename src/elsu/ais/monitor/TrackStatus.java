@@ -8,7 +8,7 @@ public class TrackStatus extends TrackStatusBase implements Cloneable {
 
 	public static TrackStatus fromMessage(TrackWatcher watcher, AISMessageBase message) throws Exception {
 		TrackStatus status = null;
-				
+
 		// only process position reports and status voyage data
 		if (message instanceof T1_PositionReportClassA) {
 			status = TrackStatus.fromMessage(watcher, (T1_PositionReportClassA) message);
@@ -54,7 +54,7 @@ public class TrackStatus extends TrackStatusBase implements Cloneable {
 				status = (TrackStatus) status.clone();
 			}
 		}
-		
+
 		return status;
 	}
 
@@ -236,7 +236,7 @@ public class TrackStatus extends TrackStatusBase implements Cloneable {
 		buffer.append(", \"commFlagText\":\"" + AISLookupValues.getCommunicationFlag(getCommFlag()) + "\"");
 		buffer.append(", \"updated\":" + isUpdated());
 		buffer.append(", \"Removed\":" + isRemoved());
-		buffer.append(", \"updateTime\":" + getUpdateTime());
+		buffer.append(", \"updateTime\":\"" + getUpdateTime() + "\"");
 		buffer.append("}");
 
 		return buffer.toString();
@@ -246,57 +246,57 @@ public class TrackStatus extends TrackStatusBase implements Cloneable {
 		StringBuilder buffer = new StringBuilder();
 
 		buffer.append("[");
-		buffer.append("\"" + getTransponderType() + "\"");
-		buffer.append(", " + getType());
-		buffer.append(", \"" + AISLookupValues.getMessageType(getType()) + "\"");
-		buffer.append(", " + getRepeat());
-		buffer.append(", " + getMmsi());
-		buffer.append(", " + getStatus());
-		buffer.append(", \"" + AISLookupValues.getNavigationStatus(getStatus()) + "\"");
-		buffer.append(", " + getRateOfTurn());
-		buffer.append(", " + getSpeed());
-		buffer.append(", " + isAccuracy());
-		buffer.append(", " + getLongitude());
-		buffer.append(", " + getLatitude());
-		buffer.append(", " + getCourse());
-		buffer.append(", " + getHeading());
-		buffer.append(", " + getSecond());
-		buffer.append(", " + getManeuver());
-		buffer.append(", \"" + AISLookupValues.getManeuverIndicator(getManeuver()) + "\"");
-		buffer.append(", " + isRaim());
-		buffer.append(", " + getRadio());
-		buffer.append(", " + getCommState());
-		buffer.append(", \"" + AISLookupValues.getCommunicationTechnology(getType()) + "\"");
-		buffer.append(", " + getAisVersion());
-		buffer.append(", " + getImo());
-		buffer.append(", \"" + getCallSign().trim() + "\"");
-		buffer.append(", \"" + getShipName().trim() + "\"");
-		buffer.append(", " + getShipType());
-		buffer.append(", \"" + AISLookupValues.getShipType(getShipType()) + "\"");
-		buffer.append(", " + getDimension());
-		buffer.append(", " + getEpfd());
-		buffer.append(", \"" + AISLookupValues.getEPFDFixType(getEpfd()) + "\"");
-		buffer.append(", " + getMonth());
-		buffer.append(", " + getHour());
-		buffer.append(", " + getDay());
-		buffer.append(", " + getMinute());
-		buffer.append(", " + getDraught());
-		buffer.append(", \"" + getDestination().trim() + "\"");
-		buffer.append(", " + getDte());
-		buffer.append(", \"" + AISLookupValues.getDte(getDte()) + "\"");
-		buffer.append(", " + getAssignedMode());
-		buffer.append(", " + getRegional());
-		buffer.append(", " + isCs());
-		buffer.append(", " + isDisplay());
-		buffer.append(", " + isDsc());
-		buffer.append(", " + isBand());
-		buffer.append(", " + isMsg22());
-		buffer.append(", " + isAssigned());
-		buffer.append(", " + getCommFlag());
-		buffer.append(", \"" + AISLookupValues.getCommunicationFlag(getCommFlag()) + "\"");
-		buffer.append(", " + isUpdated());
-		buffer.append(", " + isRemoved());
-		buffer.append(", " + getUpdateTime());
+		buffer.append("\"" + getTransponderType() + "\""); // 0
+		buffer.append(", " + getType()); // 1
+		buffer.append(", \"" + AISLookupValues.getMessageType(getType()) + "\""); // 2
+		buffer.append(", " + getRepeat()); // 3
+		buffer.append(", " + getMmsi()); // 4
+		buffer.append(", " + getStatus()); // 5
+		buffer.append(", \"" + AISLookupValues.getNavigationStatus(getStatus()) + "\""); // 6
+		buffer.append(", " + getRateOfTurn()); // 7
+		buffer.append(", " + getSpeed()); // 8
+		buffer.append(", " + isAccuracy()); // 9
+		buffer.append(", " + getLongitude()); // 10
+		buffer.append(", " + getLatitude()); // 11
+		buffer.append(", " + getCourse()); // 12
+		buffer.append(", " + getHeading()); // 13
+		buffer.append(", " + getSecond()); // 14
+		buffer.append(", " + getManeuver()); // 15
+		buffer.append(", \"" + AISLookupValues.getManeuverIndicator(getManeuver()) + "\""); // 16
+		buffer.append(", " + isRaim()); // 17
+		buffer.append(", " + getRadio()); // 18
+		buffer.append(", " + getCommState()); // 19
+		buffer.append(", \"" + AISLookupValues.getCommunicationTechnology(getType()) + "\""); // 20
+		buffer.append(", " + getAisVersion()); // 21
+		buffer.append(", " + getImo()); // 22
+		buffer.append(", \"" + getCallSign().trim() + "\""); // 23
+		buffer.append(", \"" + getShipName().trim() + "\""); // 24
+		buffer.append(", " + getShipType()); // 25
+		buffer.append(", \"" + AISLookupValues.getShipType(getShipType()) + "\""); // 26
+		buffer.append(", " + getDimension()); // 27
+		buffer.append(", " + getEpfd()); // 28
+		buffer.append(", \"" + AISLookupValues.getEPFDFixType(getEpfd()) + "\""); // 29
+		buffer.append(", " + getMonth()); // 30
+		buffer.append(", " + getHour()); // 31
+		buffer.append(", " + getDay()); // 32
+		buffer.append(", " + getMinute()); // 33
+		buffer.append(", " + getDraught()); // 34
+		buffer.append(", \"" + getDestination().trim() + "\""); // 35
+		buffer.append(", " + getDte()); // 36
+		buffer.append(", \"" + AISLookupValues.getDte(getDte()) + "\""); // 37
+		buffer.append(", " + getAssignedMode()); // 38
+		buffer.append(", " + getRegional()); // 39
+		buffer.append(", " + isCs()); // 40
+		buffer.append(", " + isDisplay()); // 41
+		buffer.append(", " + isDsc()); // 42
+		buffer.append(", " + isBand()); // 43
+		buffer.append(", " + isMsg22()); // 44
+		buffer.append(", " + isAssigned()); // 45
+		buffer.append(", " + getCommFlag()); // 46
+		buffer.append(", \"" + AISLookupValues.getCommunicationFlag(getCommFlag()) + "\""); // 47
+		buffer.append(", " + isUpdated()); // 48
+		buffer.append(", " + isRemoved()); // 49
+		buffer.append(", \"" + getUpdateTime() + "\""); // 50
 		buffer.append("]");
 
 		return buffer.toString();
