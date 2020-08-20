@@ -28,6 +28,12 @@ public class StreamServer extends WebSocketServer implements IMessageListener, I
 		this.connectors = connectors;
 		this.watcher = watcher;
 
+		// pull debug config info
+		String webSocketDebug = config.getProperty("application.services.key.websocket.debug").toString();
+		if (webSocketDebug.equals("true")) {
+			this.debug = true;
+		}
+
 		// connect all monitors to the tracker
 		getSentenceFactory().addEventListener(this);
 		this.watcher.registerListener(this);
@@ -114,19 +120,26 @@ public class StreamServer extends WebSocketServer implements IMessageListener, I
 
 	@Override
 	public void onTrackRemove(String status) {
-		System.out.println("track remove; " + status);
+		if (this.debug) {
+			System.out.println("track remove; " + status);
+		}
 		broadcast("{\"message\": " + status + ", \"state\": \"remove\"}");
 	}
 
 	@Override
 	public void onTrackAdd(String status) {
-		System.out.println("track add; " + status);
+		if (this.debug) {
+			System.out.println("track add; " + status);
+		}
 		broadcast("{\"message\": " + status + ", \"state\": \"add\"}");
 	}
 
 	@Override
 	public void onTrackUpdate(String status) {
-		System.out.println("track update; " + status);
+		if (this.debug) {
+			System.out.println("track update; " + status);
+		}
+		
 		broadcast("{\"message\": " + status + ", \"state\": \"update\"}");
 	}
 
@@ -201,6 +214,7 @@ public class StreamServer extends WebSocketServer implements IMessageListener, I
 		}
 	}
 
+	private boolean debug = false;
 	private TrackWatcher watcher = null;
 	private SentenceFactory sentenceFactory = new SentenceFactory();
 	private ArrayList<ConnectorBase> connectors = new ArrayList<>();
