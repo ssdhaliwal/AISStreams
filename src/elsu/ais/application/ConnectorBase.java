@@ -1,41 +1,36 @@
 package elsu.ais.application;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import elsu.ais.resources.IMessageListener;
+import elsu.base.IAISEventListener;
+import elsu.sentence.SentenceFactory;
 
 public abstract class ConnectorBase extends Thread {
 
-	public void addListener(IMessageListener listener) {
-		_listeners.add(listener);
-		listener.onMessage("file", "client event listener added to notification list");
+	public ConnectorBase() {
 	}
 
-	public void removeListener(IMessageListener listener) {
-		listener.onMessage("file", "client event listener removed from notification list");
-		_listeners.remove(listener);
+	public SentenceFactory getSentenceFactory() {
+		return sentenceFactory;
+	}
+	
+	public void addListener(IAISEventListener listener) {
+		getSentenceFactory().addEventListener(listener);
 	}
 
-	public void clearListeners() {
-		try {
-			sendMessage("client event listener removed from notification list");
-		} catch (Exception ex2) {
-		}
-		_listeners.clear();
+	public void removeListener(IAISEventListener listener) {
+		getSentenceFactory().removeEventListener(listener);
 	}
 
 	public void sendError(String error) throws Exception {
-		for (IMessageListener listener : _listeners) {
-			listener.onError("file" + ", error, " + error);
-		}
+		getSentenceFactory().notifyError(null, null, error);
 	}
 
 	public void sendMessage(String message) throws Exception {
-		for (IMessageListener listener : _listeners) {
-			listener.onMessage("file", message);
+		try {
+			getSentenceFactory().parseSentence(message);
+		} catch (Exception ex) {
+			sendError("error processing message, " + message + ", " + ex.getMessage());
 		}
 	}
 
-	private List<IMessageListener> _listeners = new ArrayList<>();
+	private SentenceFactory sentenceFactory = new SentenceFactory();
 }

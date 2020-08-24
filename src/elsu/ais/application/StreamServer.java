@@ -11,14 +11,11 @@ import org.java_websocket.server.WebSocketServer;
 import elsu.support.ConfigLoader;
 import elsu.base.IAISEventListener;
 import elsu.sentence.Sentence;
-import elsu.sentence.SentenceFactory;
 import elsu.ais.application.StreamNetworkConnector;
-import elsu.ais.base.AISMessageBase;
 import elsu.ais.monitor.TrackWatcher;
-import elsu.ais.resources.IMessageListener;
 import elsu.ais.resources.ITrackListener;
 
-public class StreamServer extends WebSocketServer implements IMessageListener, IAISEventListener, ITrackListener {
+public class StreamServer extends WebSocketServer implements IAISEventListener, ITrackListener {
 
 	public StreamServer(InetSocketAddress address, ConfigLoader config, Object tracker,
 			ArrayList<ConnectorBase> connectors, TrackWatcher watcher) {
@@ -35,29 +32,10 @@ public class StreamServer extends WebSocketServer implements IMessageListener, I
 		}
 
 		// connect all monitors to the tracker
-		getSentenceFactory().addEventListener(this);
 		this.watcher.registerListener(this);
 		for (ConnectorBase monitor : this.connectors) {
 			monitor.addListener(this);
 		}
-	}
-
-	public SentenceFactory getSentenceFactory() {
-		return sentenceFactory;
-	}
-
-	@Override
-	public void onMessage(String siteId, String message) {
-		try {
-			getSentenceFactory().parseSentence(message);
-		} catch (Exception ex) {
-			System.out.println("message parsing error, " + ex.getMessage());
-		}
-	}
-
-	@Override
-	public void onError(String error) {
-		System.out.println("client error, " + error);
 	}
 
 	@Override
@@ -113,13 +91,13 @@ public class StreamServer extends WebSocketServer implements IMessageListener, I
 	}
 
 	@Override
-	public void onTrackError(Exception ex, String message) {
+	public synchronized void onTrackError(Exception ex, String message) {
 		System.out.println("track error; " + ex.getMessage() + "; "+ message);
 		broadcast("{\"message\": " + message + ", \"state\": \"error\"}");
 	}
 
 	@Override
-	public void onTrackRemove(String status) {
+	public synchronized void onTrackRemove(String status) {
 		if (this.debug) {
 			System.out.println("track remove; " + status);
 		}
@@ -127,7 +105,7 @@ public class StreamServer extends WebSocketServer implements IMessageListener, I
 	}
 
 	@Override
-	public void onTrackAdd(String status) {
+	public synchronized void onTrackAdd(String status) {
 		if (this.debug) {
 			System.out.println("track add; " + status);
 		}
@@ -135,7 +113,7 @@ public class StreamServer extends WebSocketServer implements IMessageListener, I
 	}
 
 	@Override
-	public void onTrackUpdate(String status) {
+	public synchronized void onTrackUpdate(String status) {
 		if (this.debug) {
 			System.out.println("track update; " + status);
 		}
@@ -216,7 +194,6 @@ public class StreamServer extends WebSocketServer implements IMessageListener, I
 
 	private boolean debug = false;
 	private TrackWatcher watcher = null;
-	private SentenceFactory sentenceFactory = new SentenceFactory();
 	private ArrayList<ConnectorBase> connectors = new ArrayList<>();
 	private ConfigLoader config = null;
 }

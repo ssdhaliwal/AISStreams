@@ -3,11 +3,7 @@ package elsu.ais.application;
 import java.util.*;
 
 import elsu.common.FileUtils;
-import elsu.common.GlobalStack;
-import elsu.io.FileChannelTextWriter;
-import elsu.io.FileRolloverPeriodicityType;
 import elsu.support.ConfigLoader;
-import elsu.ais.resources.IMessageListener;
 
 public class StreamFileConnector extends ConnectorBase {
 
@@ -16,6 +12,8 @@ public class StreamFileConnector extends ConnectorBase {
 	public boolean isShutdown = false;
 
 	public StreamFileConnector(ConfigLoader config, String connName, String filename, int speed) throws Exception {
+		super();
+		
 		// load the config params else override from constructor
 		if (connName != null) {
 			this.filename = config.getProperty("application.services.service." + connName + ".attributes.key.filename").toString();

@@ -42,7 +42,7 @@ public class TrackStatus extends TrackStatusBase implements Cloneable {
 				status = new TrackStatus();
 				status.fromT1PositionReportClassA(message);
 
-				watcher.getTrackStatus().put(message.getMmsi(), status);
+				watcher.updateTrackStatus(status);
 				status = (TrackStatus) status.clone();
 			}
 		} else {
@@ -72,7 +72,7 @@ public class TrackStatus extends TrackStatusBase implements Cloneable {
 				status = new TrackStatus();
 				status.fromT5StaticAndVoyageRelatedData(message);
 
-				watcher.getTrackStatus().put(message.getMmsi(), status);
+				watcher.updateTrackStatus(status);
 				status = (TrackStatus) status.clone();
 			}
 		} else {
@@ -101,7 +101,7 @@ public class TrackStatus extends TrackStatusBase implements Cloneable {
 				status = new TrackStatus();
 				status.fromT18StandardClassBEquipmentPositionReport(message);
 
-				watcher.getTrackStatus().put(message.getMmsi(), status);
+				watcher.updateTrackStatus(status);
 				status = (TrackStatus) status.clone();
 			}
 		} else {
@@ -130,7 +130,7 @@ public class TrackStatus extends TrackStatusBase implements Cloneable {
 				status = new TrackStatus();
 				status.fromT19ExtendedClassBEquipmentPositionReport(message);
 
-				watcher.getTrackStatus().put(message.getMmsi(), status);
+				watcher.updateTrackStatus(status);
 				status = (TrackStatus) status.clone();
 			}
 		} else {
@@ -159,7 +159,7 @@ public class TrackStatus extends TrackStatusBase implements Cloneable {
 				status = new TrackStatus();
 				status.fromT9StandardSARPositionReport(message);
 
-				watcher.getTrackStatus().put(message.getMmsi(), status);
+				watcher.updateTrackStatus(status);
 				status = (TrackStatus) status.clone();
 			}
 		} else {
@@ -236,6 +236,7 @@ public class TrackStatus extends TrackStatusBase implements Cloneable {
 		buffer.append(", \"commFlagText\":\"" + AISLookupValues.getCommunicationFlag(getCommFlag()) + "\"");
 		buffer.append(", \"updated\":" + isUpdated());
 		buffer.append(", \"Removed\":" + isRemoved());
+		buffer.append(", \"createTime\":\"" + getCreateTime() + "\"");
 		buffer.append(", \"updateTime\":\"" + getUpdateTime() + "\"");
 		buffer.append("}");
 
@@ -296,7 +297,8 @@ public class TrackStatus extends TrackStatusBase implements Cloneable {
 		buffer.append(", \"" + AISLookupValues.getCommunicationFlag(getCommFlag()) + "\""); // 47
 		buffer.append(", " + isUpdated()); // 48
 		buffer.append(", " + isRemoved()); // 49
-		buffer.append(", \"" + getUpdateTime() + "\""); // 50
+		buffer.append(", \"" + getCreateTime() + "\""); // 50
+		buffer.append(", \"" + getUpdateTime() + "\""); // 51
 		buffer.append("]");
 
 		return buffer.toString();

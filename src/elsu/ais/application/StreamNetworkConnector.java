@@ -7,13 +7,11 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.Socket;
-import java.util.*;
 
 import elsu.common.GlobalStack;
 import elsu.io.FileChannelTextWriter;
 import elsu.io.FileRolloverPeriodicityType;
 import elsu.support.ConfigLoader;
-import elsu.ais.resources.IMessageListener;
 
 public class StreamNetworkConnector extends ConnectorBase {
 
@@ -39,6 +37,8 @@ public class StreamNetworkConnector extends ConnectorBase {
 		
 	public StreamNetworkConnector(ConfigLoader config, String connName,
 			String host, int port, String name, String id) throws Exception {
+		super();
+		
 		// load the config params else override from constructor
 		if (connName != null) {
 			hostUri = config.getProperty("application.services.service." + connName + ".attributes.key.site.host").toString();
@@ -89,13 +89,11 @@ public class StreamNetworkConnector extends ConnectorBase {
 
 	public void sendError(String error) throws Exception {
 		messageWriter.write(error);
-		
 		super.sendError(error);
 	}
 
 	public void sendMessage(String message) throws Exception {
 		messageWriter.write(message + GlobalStack.LINESEPARATOR);
-		
 		super.sendMessage(message);
 	}
 

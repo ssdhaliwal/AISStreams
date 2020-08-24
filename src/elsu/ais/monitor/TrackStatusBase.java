@@ -477,6 +477,14 @@ public abstract class TrackStatusBase {
 		this.removed = removed;
 	}
 
+	public Instant getCreateTime() {
+		return createTime;
+	}
+
+	public void setCreateTime() {
+		this.createTime = Instant.now();
+	}
+
 	public Instant getUpdateTime() {
 		return updateTime;
 	}
@@ -546,6 +554,7 @@ public abstract class TrackStatusBase {
 
 	private boolean updated = false;
 	private boolean removed = false;
+	private Instant createTime = Instant.now();
 	private Instant updateTime = Instant.now();
 	private int idleCounter = 0;
 }
