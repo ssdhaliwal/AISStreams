@@ -42,14 +42,14 @@ public class TrackStatusPosition {
 	public String toJSONArray() {
 		StringBuilder buffer = new StringBuilder();
 		
-		buffer.append("{");
+		buffer.append("[");
 		buffer.append(getSpeed());
 		buffer.append(", " + getLongitude());
 		buffer.append(", " + getLatitude());
 		buffer.append(", " + getCourse());
 		buffer.append(", " + getHeading());
 		buffer.append(", \"" + getUpdateTime() + "\"");
-		buffer.append("}");
+		buffer.append("]");
 		
 		return buffer.toString();
 	}

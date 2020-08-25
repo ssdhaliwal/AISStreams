@@ -3,6 +3,9 @@ package elsu.ais.monitor;
 import java.util.ArrayList;
 
 import org.joda.time.Instant;
+import org.joda.time.MutablePeriod;
+import org.joda.time.format.ISOPeriodFormat;
+import org.joda.time.format.PeriodFormatter;
 
 import elsu.ais.messages.*;
 import elsu.ais.messages.data.*;
@@ -31,6 +34,8 @@ public abstract class TrackStatusBase {
 		setRaim(message.isRaim());
 		setRadio(message.getRadio());
 		setCommState(message.getCommState());
+
+		setPeriod();
 	}
 
 	public void fromT5StaticAndVoyageRelatedData(T5_StaticAndVoyageRelatedData message) {
@@ -52,6 +57,8 @@ public abstract class TrackStatusBase {
 		setDraught(message.getDraught());
 		setDestination(message.getDestination());
 		setDte(message.getDte());
+
+		setPeriod();
 	}
 
 	public void fromT18StandardClassBEquipmentPositionReport(T18_StandardClassBEquipmentPositionReport message) {
@@ -78,6 +85,8 @@ public abstract class TrackStatusBase {
 		setCommFlag(message.getCommFlag());
 		setRadio(message.getRadio());
 		setCommState(message.getCommState());
+
+		setPeriod();
 	}
 
 	public void fromT19ExtendedClassBEquipmentPositionReport(T19_ExtendedClassBEquipmentPositionReport message) {
@@ -101,6 +110,8 @@ public abstract class TrackStatusBase {
 		setRaim(message.isRaim());
 		setDte(message.getDte());
 		setAssignedMode(message.getAssignedMode());
+
+		setPeriod();
 	}
 
 	public void fromT9StandardSARPositionReport(T9_StandardSARPositionReport message) {
@@ -122,6 +133,8 @@ public abstract class TrackStatusBase {
 		setCommFlag(message.getCommFlag());
 		setRadio(message.getRadio());
 		setCommState(message.getCommState());
+
+		setPeriod();
 	}
 
 	public String getTransponderType() {
@@ -470,9 +483,15 @@ public abstract class TrackStatusBase {
 	public String getPositionHistoryAsString() {
 		StringBuilder buffer = new StringBuilder();
 		
+		int count = 0;
 		buffer.append("[");
 		for(TrackStatusPosition trackPosition : getPostitionHistory()) {
+			if (count > 0) {
+				buffer.append(",");
+			}
 			buffer.append(trackPosition);
+			
+			count++;
 		}
 		buffer.append("]");
 		return buffer.toString();
@@ -481,9 +500,15 @@ public abstract class TrackStatusBase {
 	public String getPositionHistoryAsJSONArray() {
 		StringBuilder buffer = new StringBuilder();
 		
+		int count = 0;
 		buffer.append("[");
 		for(TrackStatusPosition trackPosition : getPostitionHistory()) {
+			if (count > 0) {
+				buffer.append(",");
+			}
 			buffer.append(trackPosition.toJSONArray());
+			
+			count++;
 		}
 		buffer.append("]");
 		return buffer.toString();
@@ -499,6 +524,18 @@ public abstract class TrackStatusBase {
 	
 	public void clearPositionHistory() {
 		positionHistory.clear();
+	}
+	
+	public int getUpdateCounter() {
+		return updateCounter;
+	}
+	
+	public void incUpdateCounter() {
+		this.updateCounter++;
+	}
+	
+	public void resetUpdateCounter() {
+		this.updateCounter = 0;
 	}
 	
 	public boolean isUpdated() {
@@ -532,17 +569,15 @@ public abstract class TrackStatusBase {
 	public void setUpdateTime() {
 		this.updateTime = Instant.now();
 	}
-
-	public int getIdleCounter() {
-		return idleCounter;
+	
+	public MutablePeriod getPeriod() {
+		return period;
 	}
-
-	public void setIdleCounter() {
-		this.idleCounter++;
-	}
-
-	public void clearIdleCounter() {
-		this.idleCounter = 0;
+	
+	public void setPeriod() {
+		incUpdateCounter();
+		setUpdateTime();
+		this.period.setPeriod(getCreateTime(), getUpdateTime());
 	}
 
 	private String transponderType = "";
@@ -593,9 +628,11 @@ public abstract class TrackStatusBase {
 	private int altitudeSensor = 0;
 
 	private ArrayList<TrackStatusPosition> positionHistory = new ArrayList<TrackStatusPosition>();
+	private int updateCounter = 0;
 	private boolean updated = false;
 	private boolean removed = false;
 	private Instant createTime = Instant.now();
 	private Instant updateTime = Instant.now();
-	private int idleCounter = 0;
+	
+	private MutablePeriod period = new MutablePeriod();
 }

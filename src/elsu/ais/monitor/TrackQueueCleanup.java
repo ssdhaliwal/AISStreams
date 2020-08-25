@@ -47,6 +47,8 @@ public class TrackQueueCleanup extends Thread {
 					status.setRemoved(true);
 					
 					status.clearPositionHistory();
+					status.resetUpdateCounter();
+					
 					trackStatusHistory.put(mmsi, status);
 				} catch (Exception ex) {
 					System.out.println("track cleanup thread error - removal; " + ex.getMessage());

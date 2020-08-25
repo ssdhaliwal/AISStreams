@@ -114,14 +114,6 @@ public class TrackWatcher {
 		return latencyCleanupSpan;
 	}
 
-	public TrackStatus getTrackker() {
-		return trackker;
-	}
-
-	public void setTrackker(TrackStatus trackker) {
-		this.trackker = trackker;
-	}
-
 	public void addListener(ITrackListener listener) {
 		listeners.add(listener);
 	}
@@ -172,11 +164,15 @@ public class TrackWatcher {
 				status = trackStatusQ2.get(key);
 			}
 
-			// if still null, see if in history
+			// if still null, see if in history pull and remove it
 			if (status == null) {
-				status = trackStatusHistory.get(key);
-				if (status != null) {
-					status.setCreateTime();
+				try {
+					status = trackStatusHistory.remove(key);
+					if (status != null) {
+						status.setCreateTime();
+					}
+				} catch (Exception ex) {
+					System.out.println("track history retrieval error; " + ex.getMessage());
 				}
 			}
 		}
@@ -195,13 +191,26 @@ public class TrackWatcher {
 			}
 		}
 	}
+	
+	public ArrayList<String> getTrackPicture() {
+		ArrayList<String> result = new ArrayList<String>();
+		
+		synchronized (lockSearch) {
+			for(int mmsi : trackStatusQ1.keySet()) {
+				result.add((trackStatusQ1.get(mmsi)).toJSONArray());
+			}
+			for(int mmsi : trackStatusQ2.keySet()) {
+				result.add((trackStatusQ2.get(mmsi)).toJSONArray());
+			}
+		}
+		
+		return result;
+	}
 
 	private int latencyCleanupSpan = 5;
 	private int latencyCleanupTime = 60000;
 
 	private Object lockSearch = new Object();
-
-	private TrackStatus trackker = new TrackStatus();
 
 	private List<ITrackListener> listeners = new ArrayList<>();
 

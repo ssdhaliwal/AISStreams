@@ -64,6 +64,11 @@ public class StreamServer extends WebSocketServer implements IAISEventListener, 
 		conn.send("{\"message\": \"Welcome to the server!\"}");
 		broadcast("{\"message\": \"new connection: " + handshake.getResourceDescriptor() + "\"}");
 		System.out.println("new connection to " + conn.getRemoteSocketAddress());
+		
+		ArrayList<String> statusList = watcher.getTrackPicture();
+		for(String status : statusList) {
+			conn.send("{\"message\": " + status + ", \"state\": \"add\"}");
+		}
 	}
 
 	@Override

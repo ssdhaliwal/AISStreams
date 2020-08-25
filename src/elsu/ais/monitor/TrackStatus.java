@@ -1,5 +1,8 @@
 package elsu.ais.monitor;
 
+import org.joda.time.format.ISOPeriodFormat;
+import org.joda.time.format.PeriodFormat;
+
 import elsu.ais.base.AISLookupValues;
 import elsu.ais.base.AISMessageBase;
 import elsu.ais.messages.*;
@@ -24,7 +27,7 @@ public class TrackStatus extends TrackStatusBase implements Cloneable {
 
 		// return null; if not valid message for parsing
 		if (status != null) {
-			status.clearIdleCounter();
+			status.incUpdateCounter();
 		}
 		return status;
 	}
@@ -48,7 +51,6 @@ public class TrackStatus extends TrackStatusBase implements Cloneable {
 		} else {
 			synchronized (status) {
 				status.setUpdated(true);
-				status.setUpdateTime();
 
 				status.addPositionHistory(status);
 				status.fromT1PositionReportClassA(message);
@@ -79,7 +81,6 @@ public class TrackStatus extends TrackStatusBase implements Cloneable {
 		} else {
 			synchronized (status) {
 				status.setUpdated(true);
-				status.setUpdateTime();
 
 				status.fromT5StaticAndVoyageRelatedData(message);
 				status = (TrackStatus) status.clone();
@@ -108,7 +109,6 @@ public class TrackStatus extends TrackStatusBase implements Cloneable {
 		} else {
 			synchronized (status) {
 				status.setUpdated(true);
-				status.setUpdateTime();
 
 				status.addPositionHistory(status);
 				status.fromT18StandardClassBEquipmentPositionReport(message);
@@ -138,7 +138,6 @@ public class TrackStatus extends TrackStatusBase implements Cloneable {
 		} else {
 			synchronized (status) {
 				status.setUpdated(true);
-				status.setUpdateTime();
 
 				status.addPositionHistory(status);
 				status.fromT19ExtendedClassBEquipmentPositionReport(message);
@@ -168,7 +167,6 @@ public class TrackStatus extends TrackStatusBase implements Cloneable {
 		} else {
 			synchronized (status) {
 				status.setUpdated(true);
-				status.setUpdateTime();
 
 				status.addPositionHistory(status);
 				status.fromT9StandardSARPositionReport(message);
@@ -239,10 +237,9 @@ public class TrackStatus extends TrackStatusBase implements Cloneable {
 		buffer.append(", \"commFlag\":" + getCommFlag());
 		buffer.append(", \"commFlagText\":\"" + AISLookupValues.getCommunicationFlag(getCommFlag()) + "\"");
 		buffer.append(", \"positionHistory\":" + getPositionHistoryAsString());
-		buffer.append(", \"updated\":" + isUpdated());
-		buffer.append(", \"Removed\":" + isRemoved());
 		buffer.append(", \"createTime\":\"" + getCreateTime() + "\"");
-		buffer.append(", \"updateTime\":\"" + getUpdateTime() + "\"");
+		buffer.append(", \"updateCounter\":\"" + getUpdateCounter() + "\"");
+		buffer.append(", \"period\":\"" + ISOPeriodFormat.standard().print(getPeriod()) + "\"");
 		buffer.append("}");
 
 		return buffer.toString();
@@ -300,11 +297,10 @@ public class TrackStatus extends TrackStatusBase implements Cloneable {
 		buffer.append(", " + isAssigned()); // 45
 		buffer.append(", " + getCommFlag()); // 46
 		buffer.append(", \"" + AISLookupValues.getCommunicationFlag(getCommFlag()) + "\""); // 47
-		buffer.append(", " + getPositionHistoryAsJSONArray());
-		buffer.append(", " + isUpdated()); // 48
-		buffer.append(", " + isRemoved()); // 49
-		buffer.append(", \"" + getCreateTime() + "\""); // 50
-		buffer.append(", \"" + getUpdateTime() + "\""); // 51
+		buffer.append(", " + getPositionHistoryAsJSONArray()); // 48
+		buffer.append(", \"" + getCreateTime() + "\""); // 49
+		buffer.append(", " + getUpdateCounter()); // 50
+		buffer.append(", \"" + ISOPeriodFormat.standard().print(getPeriod()) + "\""); // 51
 		buffer.append("]");
 
 		return buffer.toString();
