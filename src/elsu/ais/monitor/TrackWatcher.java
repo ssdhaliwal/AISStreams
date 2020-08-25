@@ -16,20 +16,22 @@ public class TrackWatcher {
 	public TrackWatcher(ConfigLoader config) {
 		initialize(config);
 	}
-	
+
 	private void initialize(ConfigLoader config) {
 		try {
-			latencyCleanupTime = Integer.parseInt(config.getProperty("application.services.key.latency.cleanup.time").toString());
+			latencyCleanupTime = Integer
+					.parseInt(config.getProperty("application.services.key.latency.cleanup.time").toString());
 		} catch (Exception ex) {
 			latencyCleanupTime = 60000;
 		}
 
 		try {
-			latencyCleanupSpan = Integer.parseInt(config.getProperty("application.services.key.latency.cleanup.span").toString());
+			latencyCleanupSpan = Integer
+					.parseInt(config.getProperty("application.services.key.latency.cleanup.span").toString());
 		} catch (Exception ex) {
 			latencyCleanupSpan = 5;
 		}
-		
+
 		// initialize the queueMonitor
 		queueMonitor = new TrackQueueMonitor(this);
 		queueMonitor.start();
@@ -111,7 +113,7 @@ public class TrackWatcher {
 	public int getLatencyCleanupSpan() {
 		return latencyCleanupSpan;
 	}
-	
+
 	public TrackStatus getTrackker() {
 		return trackker;
 	}
@@ -133,25 +135,25 @@ public class TrackWatcher {
 	}
 
 	public void checkQueueStatus() {
-		synchronized(lockSearch) {
+		synchronized (lockSearch) {
 			if (getQueueId() == 1) {
 				// start the cleaner thread
-				TrackQueueCleanup cleaner = new TrackQueueCleanup(trackStatusQ2, listeners);
+				TrackQueueCleanup cleaner = new TrackQueueCleanup(trackStatusHistory, trackStatusQ2, listeners);
 				cleaner.start();
-	
+
 				trackStatusQ2 = new HashMap<Integer, TrackStatus>();
 				setQueueId(2);
 			} else {
 				// start the cleaner thread
-				TrackQueueCleanup cleaner = new TrackQueueCleanup(trackStatusQ1, listeners);
+				TrackQueueCleanup cleaner = new TrackQueueCleanup(trackStatusHistory, trackStatusQ1, listeners);
 				cleaner.start();
-	
+
 				trackStatusQ1 = new HashMap<Integer, TrackStatus>();
 				setQueueId(1);
 			}
 		}
 	}
-	
+
 	public int getQueueId() {
 		return queueId;
 	}
@@ -162,25 +164,33 @@ public class TrackWatcher {
 
 	public TrackStatus getTrackStatus(int key) {
 		TrackStatus status = null;
-		
-		synchronized(lockSearch) {
+
+		synchronized (lockSearch) {
 			if (getQueueId() == 1) {
 				status = trackStatusQ1.get(key);
 			} else {
 				status = trackStatusQ2.get(key);
 			}
+
+			// if still null, see if in history
+			if (status == null) {
+				status = trackStatusHistory.get(key);
+				if (status != null) {
+					status.setCreateTime();
+				}
+			}
 		}
-		
+
 		return status;
 	}
 
 	public void updateTrackStatus(TrackStatus status) {
-		synchronized(lockSearch) {
+		synchronized (lockSearch) {
 			if (getQueueId() == 1) {
-				trackStatusQ1.put(status.getMmsi(),  status);
+				trackStatusQ1.put(status.getMmsi(), status);
 				trackStatusQ2.remove(status.getMmsi());
 			} else {
-				trackStatusQ2.put(status.getMmsi(),  status);
+				trackStatusQ2.put(status.getMmsi(), status);
 				trackStatusQ1.remove(status.getMmsi());
 			}
 		}
@@ -199,6 +209,6 @@ public class TrackWatcher {
 	private HashMap<Integer, TrackStatus> trackStatusQ1 = new HashMap<Integer, TrackStatus>();
 	private HashMap<Integer, TrackStatus> trackStatusQ2 = new HashMap<Integer, TrackStatus>();
 
-	private HashMap<Integer, TrackStatus> trackStatusMaster = new HashMap<Integer, TrackStatus>();
+	private HashMap<Integer, TrackStatus> trackStatusHistory = new HashMap<Integer, TrackStatus>();
 	private TrackQueueMonitor queueMonitor = null;
 }

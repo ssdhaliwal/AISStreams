@@ -1,5 +1,7 @@
 package elsu.ais.monitor;
 
+import java.util.ArrayList;
+
 import org.joda.time.Instant;
 
 import elsu.ais.messages.*;
@@ -461,6 +463,44 @@ public abstract class TrackStatusBase {
 		this.altitude = altitude;
 	}
 
+	public ArrayList<TrackStatusPosition> getPostitionHistory() {
+		return positionHistory;
+	}
+
+	public String getPositionHistoryAsString() {
+		StringBuilder buffer = new StringBuilder();
+		
+		buffer.append("[");
+		for(TrackStatusPosition trackPosition : getPostitionHistory()) {
+			buffer.append(trackPosition);
+		}
+		buffer.append("]");
+		return buffer.toString();
+	}
+
+	public String getPositionHistoryAsJSONArray() {
+		StringBuilder buffer = new StringBuilder();
+		
+		buffer.append("[");
+		for(TrackStatusPosition trackPosition : getPostitionHistory()) {
+			buffer.append(trackPosition.toJSONArray());
+		}
+		buffer.append("]");
+		return buffer.toString();
+	}
+	
+	public void addPositionHistory(TrackStatus status) {
+		if (this.positionHistory.size() > 10) {
+			this.positionHistory.remove(0);
+		}
+		
+		this.positionHistory.add(TrackStatusPosition.fromTrackStatus(status));
+	}
+	
+	public void clearPositionHistory() {
+		positionHistory.clear();
+	}
+	
 	public boolean isUpdated() {
 		return updated;
 	}
@@ -552,6 +592,7 @@ public abstract class TrackStatusBase {
 	private int altitude = 4095;
 	private int altitudeSensor = 0;
 
+	private ArrayList<TrackStatusPosition> positionHistory = new ArrayList<TrackStatusPosition>();
 	private boolean updated = false;
 	private boolean removed = false;
 	private Instant createTime = Instant.now();

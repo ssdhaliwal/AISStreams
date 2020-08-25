@@ -50,6 +50,7 @@ public class TrackStatus extends TrackStatusBase implements Cloneable {
 				status.setUpdated(true);
 				status.setUpdateTime();
 
+				status.addPositionHistory(status);
 				status.fromT1PositionReportClassA(message);
 				status = (TrackStatus) status.clone();
 			}
@@ -109,6 +110,7 @@ public class TrackStatus extends TrackStatusBase implements Cloneable {
 				status.setUpdated(true);
 				status.setUpdateTime();
 
+				status.addPositionHistory(status);
 				status.fromT18StandardClassBEquipmentPositionReport(message);
 				status = (TrackStatus) status.clone();
 			}
@@ -138,6 +140,7 @@ public class TrackStatus extends TrackStatusBase implements Cloneable {
 				status.setUpdated(true);
 				status.setUpdateTime();
 
+				status.addPositionHistory(status);
 				status.fromT19ExtendedClassBEquipmentPositionReport(message);
 				status = (TrackStatus) status.clone();
 			}
@@ -167,6 +170,7 @@ public class TrackStatus extends TrackStatusBase implements Cloneable {
 				status.setUpdated(true);
 				status.setUpdateTime();
 
+				status.addPositionHistory(status);
 				status.fromT9StandardSARPositionReport(message);
 				status = (TrackStatus) status.clone();
 			}
@@ -234,6 +238,7 @@ public class TrackStatus extends TrackStatusBase implements Cloneable {
 		buffer.append(", \"assigned\":" + isAssigned());
 		buffer.append(", \"commFlag\":" + getCommFlag());
 		buffer.append(", \"commFlagText\":\"" + AISLookupValues.getCommunicationFlag(getCommFlag()) + "\"");
+		buffer.append(", \"positionHistory\":" + getPositionHistoryAsString());
 		buffer.append(", \"updated\":" + isUpdated());
 		buffer.append(", \"Removed\":" + isRemoved());
 		buffer.append(", \"createTime\":\"" + getCreateTime() + "\"");
@@ -295,6 +300,7 @@ public class TrackStatus extends TrackStatusBase implements Cloneable {
 		buffer.append(", " + isAssigned()); // 45
 		buffer.append(", " + getCommFlag()); // 46
 		buffer.append(", \"" + AISLookupValues.getCommunicationFlag(getCommFlag()) + "\""); // 47
+		buffer.append(", " + getPositionHistoryAsJSONArray());
 		buffer.append(", " + isUpdated()); // 48
 		buffer.append(", " + isRemoved()); // 49
 		buffer.append(", \"" + getCreateTime() + "\""); // 50

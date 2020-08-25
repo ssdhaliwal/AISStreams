@@ -10,9 +10,12 @@ import elsu.ais.resources.ITrackListener;
 public class TrackQueueCleanup extends Thread {
 	private List<ITrackListener> listeners = null;
 	private HashMap<Integer, TrackStatus> trackStatusQ = null;
+	private HashMap<Integer, TrackStatus> trackStatusHistory = null;
 
-	public TrackQueueCleanup(HashMap<Integer, TrackStatus> trackStatusQ, List<ITrackListener> listeners) {
-		this.trackStatusQ = trackStatusQ;
+	public TrackQueueCleanup(HashMap<Integer, TrackStatus> statusHistory, 
+			HashMap<Integer, TrackStatus> statusQ, List<ITrackListener> listeners) {
+		this.trackStatusHistory = statusHistory;
+		this.trackStatusQ = statusQ;
 		this.listeners = listeners;
 	}
 
@@ -39,9 +42,12 @@ public class TrackQueueCleanup extends Thread {
 				
 				try {
 					status = trackStatusQ.get(mmsi);
+
+					sendTrackRemove(status.toJSONArray());
 					status.setRemoved(true);
 					
-					sendTrackRemove(status.toJSONArray());
+					status.clearPositionHistory();
+					trackStatusHistory.put(mmsi, status);
 				} catch (Exception ex) {
 					System.out.println("track cleanup thread error - removal; " + ex.getMessage());
 				}
