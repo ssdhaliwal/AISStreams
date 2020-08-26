@@ -4,9 +4,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import org.joda.time.Instant;
-import org.joda.time.Minutes;
-
 import elsu.ais.base.AISMessageBase;
 import elsu.ais.resources.ITrackListener;
 import elsu.support.ConfigLoader;
@@ -143,6 +140,8 @@ public class TrackWatcher {
 				trackStatusQ1 = new HashMap<Integer, TrackStatus>();
 				setQueueId(1);
 			}
+
+			// System.out.println("checkQueueStatus/ Q:" + getQueueId() + "/ " + trackStatusQ1.size() + "/ " + trackStatusQ2.size());
 		}
 	}
 
@@ -160,10 +159,20 @@ public class TrackWatcher {
 		synchronized (lockSearch) {
 			if (getQueueId() == 1) {
 				status = trackStatusQ1.get(key);
+				
+				if (status == null) {
+					status = trackStatusQ2.get(key);
+				}
 			} else {
 				status = trackStatusQ2.get(key);
+				
+				if (status == null) {
+					status = trackStatusQ1.get(key);
+				}
 			}
 
+			// System.out.println("getTrackStatus/ Q:" + getQueueId() + "/ " + trackStatusQ1.size() + "/ " + trackStatusQ2.size() + "/ " + status);
+			
 			// if still null, see if in history pull and remove it
 			if (status == null) {
 				try {
@@ -174,6 +183,8 @@ public class TrackWatcher {
 				} catch (Exception ex) {
 					System.out.println("track history retrieval error; " + ex.getMessage());
 				}
+
+				// System.out.println("getTrackStatus/ H:" + trackStatusHistory.size() + "/ :" + status);
 			}
 		}
 
@@ -182,6 +193,8 @@ public class TrackWatcher {
 
 	public void updateTrackStatus(TrackStatus status) {
 		synchronized (lockSearch) {
+			// System.out.println("updateTrackStatus/ Q:" + getQueueId() + "/ " + trackStatusQ1.size() + "/ " + status);
+
 			if (getQueueId() == 1) {
 				trackStatusQ1.put(status.getMmsi(), status);
 				trackStatusQ2.remove(status.getMmsi());

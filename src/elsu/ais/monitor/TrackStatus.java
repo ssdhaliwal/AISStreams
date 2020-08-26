@@ -25,10 +25,6 @@ public class TrackStatus extends TrackStatusBase implements Cloneable {
 			status = TrackStatus.fromMessage(watcher, (T9_StandardSARPositionReport) message);
 		}
 
-		// return null; if not valid message for parsing
-		if (status != null) {
-			status.incUpdateCounter();
-		}
 		return status;
 	}
 
@@ -54,6 +50,8 @@ public class TrackStatus extends TrackStatusBase implements Cloneable {
 
 				status.addPositionHistory(status);
 				status.fromT1PositionReportClassA(message);
+
+				watcher.updateTrackStatus(status);
 				status = (TrackStatus) status.clone();
 			}
 		}
@@ -83,6 +81,8 @@ public class TrackStatus extends TrackStatusBase implements Cloneable {
 				status.setUpdated(true);
 
 				status.fromT5StaticAndVoyageRelatedData(message);
+
+				watcher.updateTrackStatus(status);
 				status = (TrackStatus) status.clone();
 			}
 		}
@@ -112,6 +112,8 @@ public class TrackStatus extends TrackStatusBase implements Cloneable {
 
 				status.addPositionHistory(status);
 				status.fromT18StandardClassBEquipmentPositionReport(message);
+
+				watcher.updateTrackStatus(status);
 				status = (TrackStatus) status.clone();
 			}
 		}
@@ -141,6 +143,8 @@ public class TrackStatus extends TrackStatusBase implements Cloneable {
 
 				status.addPositionHistory(status);
 				status.fromT19ExtendedClassBEquipmentPositionReport(message);
+
+				watcher.updateTrackStatus(status);
 				status = (TrackStatus) status.clone();
 			}
 		}
@@ -170,6 +174,7 @@ public class TrackStatus extends TrackStatusBase implements Cloneable {
 
 				status.addPositionHistory(status);
 				status.fromT9StandardSARPositionReport(message);
+				
 				status = (TrackStatus) status.clone();
 			}
 		}
