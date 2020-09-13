@@ -4,8 +4,6 @@ import java.util.ArrayList;
 
 import org.joda.time.Instant;
 import org.joda.time.MutablePeriod;
-import org.joda.time.format.ISOPeriodFormat;
-import org.joda.time.format.PeriodFormatter;
 
 import elsu.ais.messages.*;
 import elsu.ais.messages.data.*;

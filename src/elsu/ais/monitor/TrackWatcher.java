@@ -141,7 +141,7 @@ public class TrackWatcher {
 				setQueueId(1);
 			}
 
-			// System.out.println("checkQueueStatus/ Q:" + getQueueId() + "/ " + trackStatusQ1.size() + "/ " + trackStatusQ2.size());
+			System.out.println("checkQueueStatus/ Q:" + getQueueId() + "/1: " + trackStatusQ1.size() + "/2: " + trackStatusQ2.size() + "/H: " + trackStatusHistory.size());
 		}
 	}
 
@@ -171,8 +171,6 @@ public class TrackWatcher {
 				}
 			}
 
-			// System.out.println("getTrackStatus/ Q:" + getQueueId() + "/ " + trackStatusQ1.size() + "/ " + trackStatusQ2.size() + "/ " + status);
-			
 			// if still null, see if in history pull and remove it
 			if (status == null) {
 				try {
@@ -183,9 +181,9 @@ public class TrackWatcher {
 				} catch (Exception ex) {
 					System.out.println("track history retrieval error; " + ex.getMessage());
 				}
-
-				// System.out.println("getTrackStatus/ H:" + trackStatusHistory.size() + "/ :" + status);
 			}
+
+			// System.out.println("getTrackStatus/ Q:" + getQueueId() + "/1: " + trackStatusQ1.size() + "/2: " + trackStatusQ2.size() + "/H: " + trackStatusHistory.size() + "/mmsi: " + key);
 		}
 
 		return status;

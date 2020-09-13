@@ -44,7 +44,11 @@ public class StreamFileConnector extends ConnectorBase {
 					line = fileData.get(i);
 
 					// process the message and fire the events
-					sendMessage(line);
+					try {
+						sendMessage(line);
+					} catch (Exception exi) {
+						sendError("client collector error, sending message, (" + line + "), " + exi.getMessage());
+					}
 				} else {
 					i = -1;
 				}
@@ -56,8 +60,8 @@ public class StreamFileConnector extends ConnectorBase {
 			// log error for tracking
 			try {
 				sendError("file, " + ex.getMessage());
-			} catch (Exception ex2) {
-				System.out.println("error, " + "file" + ", " + ex2.getMessage());
+			} catch (Exception exi) {
+				System.out.println("error, " + "file" + ", " + exi.getMessage());
 			}
 		} finally {
 			isShutdown = true;

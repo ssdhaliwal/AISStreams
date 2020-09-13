@@ -88,7 +88,7 @@ public class StreamNetworkConnector extends ConnectorBase {
 	}
 
 	public void sendError(String error) throws Exception {
-		messageWriter.write(error);
+		messageWriter.write(error + GlobalStack.LINESEPARATOR);
 		super.sendError(error);
 	}
 
@@ -198,12 +198,20 @@ public class StreamNetworkConnector extends ConnectorBase {
 							monitorRecordCounter++;
 							
 							// process the message and fire the events
-							sendMessage(line);
+							try {
+								sendMessage(line);
+							} catch (Exception exi) {
+								sendError("client collector error, sending message, (" + line + "), " + exi.getMessage());
+							}
 						}
 					} catch (Exception ex) {
 						// log error for tracking
 						isRunning = false;
-						sendError("client collector error, " + ex.getMessage());
+						try {
+							sendError("client collector error, " + ex.getMessage());
+						} catch (Exception exi) {
+							sendError("client collector error, sending error, " + exi.getMessage());
+						}
 					} finally {
 						// close out all open in/out streams.
 						try {
