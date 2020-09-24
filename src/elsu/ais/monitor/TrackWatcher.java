@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import elsu.ais.base.AISMessageBase;
 import elsu.ais.resources.ITrackListener;
 import elsu.support.ConfigLoader;
@@ -222,7 +224,8 @@ public class TrackWatcher {
 	private int latencyCleanupTime = 60000;
 
 	private Object lockSearch = new Object();
-
+	public static ObjectMapper objectMapper = new ObjectMapper();
+	
 	private List<ITrackListener> listeners = new ArrayList<>();
 
 	private int queueId = 1;

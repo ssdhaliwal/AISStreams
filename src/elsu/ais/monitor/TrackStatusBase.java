@@ -5,8 +5,12 @@ import java.util.ArrayList;
 import org.joda.time.Instant;
 import org.joda.time.MutablePeriod;
 
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+
 import elsu.ais.messages.*;
 import elsu.ais.messages.data.*;
+import elsu.sentence.SentenceBase;
 
 public abstract class TrackStatusBase {
 
@@ -479,37 +483,43 @@ public abstract class TrackStatusBase {
 	}
 
 	public String getPositionHistoryAsString() {
-		StringBuilder buffer = new StringBuilder();
+		String result = "";
 		
-		int count = 0;
-		buffer.append("[");
-		for(TrackStatusPosition trackPosition : getPostitionHistory()) {
-			if (count > 0) {
-				buffer.append(",");
+		try {
+			// result = SentenceBase.objectMapper.writeValueAsString(this);
+			ArrayNode node = TrackWatcher.objectMapper.createArrayNode();
+
+			for(TrackStatusPosition trackPosition : getPostitionHistory()) {
+				node.add(SentenceBase.objectMapper.readTree(trackPosition.toString()));
 			}
-			buffer.append(trackPosition);
 			
-			count++;
+			result = TrackWatcher.objectMapper.writeValueAsString(node);
+			node = null;
+		} catch (Exception exi) {
+			result = "error, Sentence, " + exi.getMessage();
 		}
-		buffer.append("]");
-		return buffer.toString();
+		
+		return result;
 	}
 
 	public String getPositionHistoryAsJSONArray() {
-		StringBuilder buffer = new StringBuilder();
+		String result = "";
 		
-		int count = 0;
-		buffer.append("[");
-		for(TrackStatusPosition trackPosition : getPostitionHistory()) {
-			if (count > 0) {
-				buffer.append(",");
+		try {
+			// result = SentenceBase.objectMapper.writeValueAsString(this);
+			ArrayNode node = TrackWatcher.objectMapper.createArrayNode();
+
+			for(TrackStatusPosition trackPosition : getPostitionHistory()) {
+				node.add(SentenceBase.objectMapper.readTree(trackPosition.toJSONArray()));
 			}
-			buffer.append(trackPosition.toJSONArray());
 			
-			count++;
+			result = TrackWatcher.objectMapper.writeValueAsString(node);
+			node = null;
+		} catch (Exception exi) {
+			result = "error, Sentence, " + exi.getMessage();
 		}
-		buffer.append("]");
-		return buffer.toString();
+		
+		return result;
 	}
 	
 	public void addPositionHistory(TrackStatus status) {

@@ -2,6 +2,11 @@ package elsu.ais.monitor;
 
 import org.joda.time.Instant;
 
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+
+import elsu.sentence.SentenceBase;
+
 public class TrackStatusPosition {
 
 	public static TrackStatusPosition fromTrackStatus(TrackStatus status) {
@@ -26,32 +31,49 @@ public class TrackStatusPosition {
 
 	@Override
 	public String toString() {
-		StringBuilder buffer = new StringBuilder();
+		String result = "";
 		
-		buffer.append("{");
-		buffer.append("\"speed\":" + getSpeed());
-		buffer.append(", \"longitude\":" + getLongitude());
-		buffer.append(", \"latitude\":" + getLatitude());
-		buffer.append(", \"course\":" + getCourse());
-		buffer.append(", \"heading\":" + getHeading());
-		buffer.append(", \"updateTime\":\"" + getUpdateTime() + "\"");
-		buffer.append("}");
+		try {
+			// result = SentenceBase.objectMapper.writeValueAsString(this);
+			ObjectNode node = TrackWatcher.objectMapper.createObjectNode();
+
+			node.put("speed", getSpeed());
+			node.put("longitude", getLongitude());
+			node.put("latitude", getLatitude());
+			node.put("course", getCourse());
+			node.put("heading", getHeading());
+			node.put("updateTime", SentenceBase.formatEPOCHToUTC((int)(getUpdateTime().getMillis() / 1000)));
+			
+			result = TrackWatcher.objectMapper.writeValueAsString(node);
+			node = null;
+		} catch (Exception exi) {
+			result = "error, Sentence, " + exi.getMessage();
+		}
 		
-		return buffer.toString();
+		return result;
 	}
+	
 	public String toJSONArray() {
-		StringBuilder buffer = new StringBuilder();
+		String result = "";
 		
-		buffer.append("[");
-		buffer.append(getSpeed());
-		buffer.append(", " + getLongitude());
-		buffer.append(", " + getLatitude());
-		buffer.append(", " + getCourse());
-		buffer.append(", " + getHeading());
-		buffer.append(", \"" + getUpdateTime() + "\"");
-		buffer.append("]");
+		try {
+			// result = SentenceBase.objectMapper.writeValueAsString(this);
+			ArrayNode node = SentenceBase.objectMapper.createArrayNode();
+
+			node.add(getSpeed());
+			node.add(getLongitude());
+			node.add(getLatitude());
+			node.add(getCourse());
+			node.add(getHeading());
+			node.add(SentenceBase.formatEPOCHToUTC((int)(getUpdateTime().getMillis() / 1000)));
+			
+			result = SentenceBase.objectMapper.writeValueAsString(node);
+			node = null;
+		} catch (Exception exi) {
+			result = "error, Sentence, " + exi.getMessage();
+		}
 		
-		return buffer.toString();
+		return result;
 	}
 	
 	public float getSpeed() {
