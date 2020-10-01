@@ -51,7 +51,11 @@ public class StreamServer extends WebSocketServer implements IAISEventListener, 
 
 	@Override
 	public void onMessage(WebSocket conn, String message) {
-		broadcast(message);
+		if (message.equals("ping")) {
+			System.out.println("alive message received from " + conn.getRemoteSocketAddress());
+		} else {
+			broadcast(message);
+		}
 	}
 
 	@Override
@@ -65,10 +69,12 @@ public class StreamServer extends WebSocketServer implements IAISEventListener, 
 		broadcast("{\"message\": \"new connection: " + handshake.getResourceDescriptor() + "\"}");
 		System.out.println("new connection to " + conn.getRemoteSocketAddress());
 		
+		/*
 		ArrayList<String> statusList = watcher.getTrackPicture();
 		for(String status : statusList) {
 			conn.send("{\"message\": " + status + ", \"state\": \"add\"}");
 		}
+		*/
 	}
 
 	@Override
@@ -79,7 +85,7 @@ public class StreamServer extends WebSocketServer implements IAISEventListener, 
 	@Override
 	public void onAISError(Exception ex, Object o, String message) {
 		Thread.yield();
-		broadcast("{\"message\": " + o + ", \"state\": \"error\"}");
+		System.out.println("{\"message\": " + message + ", \"state\": \"error\"}");
 	}
 
 	@Override

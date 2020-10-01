@@ -176,7 +176,7 @@ public class TrackWatcher {
 			// if still null, see if in history pull and remove it
 			if (status == null) {
 				try {
-					status = trackStatusHistory.remove(key);
+					status = trackStatusHistory.get(key);
 					if (status != null) {
 						status.setCreateTime();
 					}
