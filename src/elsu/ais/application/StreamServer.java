@@ -16,7 +16,6 @@ import elsu.ais.monitor.TrackWatcher;
 import elsu.ais.resources.ITrackListener;
 
 public class StreamServer extends WebSocketServer implements IAISEventListener, ITrackListener {
-
 	public StreamServer(InetSocketAddress address, ConfigLoader config, Object tracker,
 			ArrayList<ConnectorBase> connectors, TrackWatcher watcher) {
 		super(address);
@@ -84,20 +83,18 @@ public class StreamServer extends WebSocketServer implements IAISEventListener, 
 
 	@Override
 	public void onAISError(Exception ex, Object o, String message) {
-		Thread.yield();
 		System.out.println("{\"message\": " + message + ", \"state\": \"error\"}");
 	}
 
 	@Override
 	public void onAISComplete(Object o) {
-		Thread.yield();
 		// broadcast("{\"message\": " + o + ", \"state\": \"new\"}");
 		watcher.processTrack(((Sentence) o).getAISMessage());
 	}
 
 	@Override
 	public void onAISUpdate(Object o) {
-		Thread.yield();
+		// System.out.println(o.toString());
 		// broadcast("{\"message\": " + o + ", \"state\": \"update\"}");
 	}
 
@@ -112,6 +109,7 @@ public class StreamServer extends WebSocketServer implements IAISEventListener, 
 		if (this.debug) {
 			System.out.println("track remove; " + status);
 		}
+		
 		broadcast("{\"message\": " + status + ", \"state\": \"remove\"}");
 	}
 
@@ -120,6 +118,7 @@ public class StreamServer extends WebSocketServer implements IAISEventListener, 
 		if (this.debug) {
 			System.out.println("track add; " + status);
 		}
+		
 		broadcast("{\"message\": " + status + ", \"state\": \"add\"}");
 	}
 
@@ -198,6 +197,8 @@ public class StreamServer extends WebSocketServer implements IAISEventListener, 
 			WebSocketServer server = new StreamServer(new InetSocketAddress(_websocketHostUri, _websocketHostPort),
 					config, null, connectors, watcher);
 			server.run();
+
+			// StreamServer server = new StreamServer(null, config, null, connectors, null);
 		} catch (Exception ex) {
 			System.out.println("error starting app, " + ex.getMessage());
 		}

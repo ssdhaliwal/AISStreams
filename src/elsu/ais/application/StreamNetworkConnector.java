@@ -7,10 +7,15 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.nio.charset.StandardCharsets;
+import java.util.regex.Matcher;
 
+import elsu.ais.exceptions.IncompleteFragmentException;
 import elsu.common.GlobalStack;
 import elsu.io.FileChannelTextWriter;
 import elsu.io.FileRolloverPeriodicityType;
+import elsu.sentence.Sentence;
+import elsu.sentence.SentenceBase;
 import elsu.support.ConfigLoader;
 
 public class StreamNetworkConnector extends ConnectorBase {
@@ -25,16 +30,18 @@ public class StreamNetworkConnector extends ConnectorBase {
 	public FileRolloverPeriodicityType rolloverPeriodicity = FileRolloverPeriodicityType.DAY;
 	public String siteId = "306";
 	public String siteName = "SITESVR1";
+	public boolean positionReportsOnly = true;
 	public boolean isShutdown = false;
 	
 	private boolean isRunning = false;
 	private boolean isMonitorRunning = false;
 	private long recordCounter = 0L;
 	private long monitorRecordCounter = 0L;
+	private long systemGCCounter = 0L;
 	private Socket clientSocket = null;
 	private String fileMask = "";
 	private volatile FileChannelTextWriter messageWriter = null;
-		
+	
 	public StreamNetworkConnector(ConfigLoader config, String connName,
 			String host, int port, String name, String id) throws Exception {
 		super();
@@ -51,6 +58,10 @@ public class StreamNetworkConnector extends ConnectorBase {
 			rolloverPeriodicity = FileRolloverPeriodicityType.valueOf(config.getProperty("application.services.service." + connName + ".attributes.key.log.rollover.periodicity").toString());
 			siteId = config.getProperty("application.services.service." + connName + ".attributes.key.site.id").toString();
 			siteName = config.getProperty("application.services.service." + connName + ".attributes.key.site.name").toString();
+			
+			if (config.getProperty("application.services.service." + connName + ".attributes.key.site.position.reports.only").toString().equals("true")) {
+				positionReportsOnly = true;
+			};
 		} else {
 			hostUri = host;
 			hostPort = port;
@@ -89,11 +100,13 @@ public class StreamNetworkConnector extends ConnectorBase {
 
 	public void sendError(String error) throws Exception {
 		messageWriter.write(error + GlobalStack.LINESEPARATOR);
+		// System.out.println(error);
 		super.sendError(error);
 	}
 
 	public void sendMessage(String message) throws Exception {
 		messageWriter.write(message + GlobalStack.LINESEPARATOR);
+		// System.out.println(message);
 		super.sendMessage(message);
 	}
 
@@ -101,6 +114,7 @@ public class StreamNetworkConnector extends ConnectorBase {
 	public void run() {
 		try {
 			Thread tMonitor = null;
+			Thread tSender = null;
 
 			while (!isShutdown) {
 				// if socket is not running, try to start it
@@ -130,6 +144,7 @@ public class StreamNetworkConnector extends ConnectorBase {
 						@Override
 						public void run() {
 							isMonitorRunning = true;
+							
 							try {
 								sendMessage("client monitor started...");
 							} catch (Exception ex2) {
@@ -168,19 +183,17 @@ public class StreamNetworkConnector extends ConnectorBase {
 									}
 								}
 							}
+							
+							isMonitorRunning = false;
 						}
 					});
 
 					// start the thread to create connection for the service.
 					tMonitor.start();
 				}
-
+				
 				// start the connection data collection
 				if (isRunning && !isShutdown) {
-					// local parameter for reader thread access, passes the
-					// socket in stream
-					final BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-
 					// local parameter for reader thread access, passes the
 					// socket out
 					// stream
@@ -188,10 +201,15 @@ public class StreamNetworkConnector extends ConnectorBase {
 							new BufferedWriter(new OutputStreamWriter(clientSocket.getOutputStream())));
 
 					// this is to prevent socket to stay open after error
-					try {
+					String line = null, tags = "";
+					Matcher hMatch = null;
+					systemGCCounter = 0L;
+					try (BufferedReader in = new BufferedReader(
+							  new InputStreamReader(clientSocket.getInputStream(), StandardCharsets.UTF_8))) {
+						
 						while (isRunning && !isShutdown) {
 							// read line from the socket stream
-							String line = in.readLine();
+							line = in.readLine();
 
 							// increment record trackers
 							recordCounter++;
@@ -199,10 +217,30 @@ public class StreamNetworkConnector extends ConnectorBase {
 							
 							// process the message and fire the events
 							try {
-								sendMessage(line);
+								if (positionReportsOnly) {
+									if (line.matches("(?s).*!..VD[OM].*")) {
+										hMatch = SentenceBase.messageVDOPattern.matcher(line);
+										while (hMatch.find()) {
+											tags = hMatch.group(0);
+											sendMessage(tags);
+										}
+									}
+								} else {
+									sendMessage(line);
+								}
+								
+								systemGCCounter++;
+								if (systemGCCounter == 50000) {
+									systemGCCounter = 0;
+									System.gc();
+								}
+
+								Thread.yield();
 							} catch (Exception exi) {
 								sendError("client collector error, sending message, (" + line + "), " + exi.getMessage());
 							}
+							
+							line = null;
 						}
 					} catch (Exception ex) {
 						// log error for tracking
@@ -220,10 +258,6 @@ public class StreamNetworkConnector extends ConnectorBase {
 							} catch (Exception exi) {
 							}
 							out.close();
-						} catch (Exception exi) {
-						}
-						try {
-							in.close();
 						} catch (Exception exi) {
 						}
 					}
