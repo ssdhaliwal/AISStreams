@@ -19,6 +19,8 @@ public class StreamServer extends WebSocketServer implements IAISEventListener, 
 	public StreamServer(InetSocketAddress address, ConfigLoader config, Object tracker,
 			ArrayList<ConnectorBase> connectors, TrackWatcher watcher) {
 		super(address);
+		
+		setConnectionLostTimeout(0);
 
 		this.config = config;
 		this.connectors = connectors;

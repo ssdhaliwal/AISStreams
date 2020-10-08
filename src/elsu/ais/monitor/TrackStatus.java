@@ -44,14 +44,13 @@ public class TrackStatus extends TrackStatusBase implements Cloneable {
 			synchronized (TrackStatus.class) {
 				status = new TrackStatus();
 				status.fromT1PositionReportClassA(message);
+				status.setUpdated(false);
 
 				watcher.updateTrackStatus(status);
 				status = (TrackStatus) status.clone();
 			}
 		} else {
 			synchronized (status) {
-				status.setUpdated(true);
-
 				status.addPositionHistory(status);
 				status.fromT1PositionReportClassA(message);
 
@@ -76,14 +75,13 @@ public class TrackStatus extends TrackStatusBase implements Cloneable {
 			synchronized (TrackStatus.class) {
 				status = new TrackStatus();
 				status.fromT5StaticAndVoyageRelatedData(message);
+				status.setUpdated(false);
 
 				watcher.updateTrackStatus(status);
 				status = (TrackStatus) status.clone();
 			}
 		} else {
 			synchronized (status) {
-				status.setUpdated(true);
-
 				status.fromT5StaticAndVoyageRelatedData(message);
 
 				watcher.updateTrackStatus(status);
@@ -106,14 +104,13 @@ public class TrackStatus extends TrackStatusBase implements Cloneable {
 			synchronized (TrackStatus.class) {
 				status = new TrackStatus();
 				status.fromT18StandardClassBEquipmentPositionReport(message);
+				status.setUpdated(false);
 
 				watcher.updateTrackStatus(status);
 				status = (TrackStatus) status.clone();
 			}
 		} else {
 			synchronized (status) {
-				status.setUpdated(true);
-
 				status.addPositionHistory(status);
 				status.fromT18StandardClassBEquipmentPositionReport(message);
 
@@ -137,14 +134,13 @@ public class TrackStatus extends TrackStatusBase implements Cloneable {
 			synchronized (TrackStatus.class) {
 				status = new TrackStatus();
 				status.fromT19ExtendedClassBEquipmentPositionReport(message);
+				status.setUpdated(false);
 
 				watcher.updateTrackStatus(status);
 				status = (TrackStatus) status.clone();
 			}
 		} else {
 			synchronized (status) {
-				status.setUpdated(true);
-
 				status.addPositionHistory(status);
 				status.fromT19ExtendedClassBEquipmentPositionReport(message);
 
@@ -168,14 +164,13 @@ public class TrackStatus extends TrackStatusBase implements Cloneable {
 			synchronized (TrackStatus.class) {
 				status = new TrackStatus();
 				status.fromT9StandardSARPositionReport(message);
+				status.setUpdated(false);
 
 				watcher.updateTrackStatus(status);
 				status = (TrackStatus) status.clone();
 			}
 		} else {
 			synchronized (status) {
-				status.setUpdated(true);
-
 				status.addPositionHistory(status);
 				status.fromT9StandardSARPositionReport(message);
 				

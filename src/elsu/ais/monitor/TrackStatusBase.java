@@ -10,6 +10,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import elsu.ais.messages.*;
 import elsu.ais.messages.data.*;
+import elsu.ais.resources.Utilities;
 import elsu.sentence.SentenceBase;
 
 public abstract class TrackStatusBase {
@@ -144,6 +145,9 @@ public abstract class TrackStatusBase {
 	}
 
 	public String setTransponderType(String transponderType) {
+		if (!transponderType.equals(this.transponderType)) {
+			setUpdated(true);
+		}
 		return this.transponderType = transponderType;
 	}
 
@@ -152,6 +156,9 @@ public abstract class TrackStatusBase {
 	}
 
 	public void setType(int type) {
+		if (type != this.type) {
+			setUpdated(true);
+		}
 		this.type = type;
 	}
 
@@ -160,6 +167,9 @@ public abstract class TrackStatusBase {
 	}
 
 	public void setRepeat(int repeat) {
+		if (repeat != this.repeat) {
+			setUpdated(true);
+		}
 		this.repeat = repeat;
 	}
 
@@ -168,6 +178,9 @@ public abstract class TrackStatusBase {
 	}
 
 	public void setMmsi(int mmsi) {
+		if (mmsi != this.mmsi) {
+			setUpdated(true);
+		}
 		this.mmsi = mmsi;
 	}
 
@@ -176,6 +189,9 @@ public abstract class TrackStatusBase {
 	}
 
 	public void setStatus(int status) {
+		if (status != this.status) {
+			setUpdated(true);
+		}
 		this.status = status;
 	}
 
@@ -184,6 +200,9 @@ public abstract class TrackStatusBase {
 	}
 
 	public void setRateOfTurn(double rateOfTurn) {
+		if (!Utilities.doubleCompare(rateOfTurn, this.rateOfTurn)) {
+			setUpdated(true);
+		}
 		this.rateOfTurn = rateOfTurn;
 	}
 
@@ -192,6 +211,9 @@ public abstract class TrackStatusBase {
 	}
 
 	public void setSpeed(float speed) {
+		if (!Utilities.floatCompare(speed, this.speed)) {
+			setUpdated(true);
+		}
 		this.speed = speed;
 	}
 
@@ -200,6 +222,9 @@ public abstract class TrackStatusBase {
 	}
 
 	public void setAccuracy(boolean accuracy) {
+		if (accuracy != this.accuracy) {
+			setUpdated(true);
+		}
 		this.accuracy = accuracy;
 	}
 
@@ -208,6 +233,9 @@ public abstract class TrackStatusBase {
 	}
 
 	public void setLongitude(float longitude) {
+		if (!Utilities.floatCompare(longitude, this.longitude)) {
+			setUpdated(true);
+		}
 		this.longitude = longitude;
 	}
 
@@ -216,6 +244,9 @@ public abstract class TrackStatusBase {
 	}
 
 	public void setLatitude(float latitude) {
+		if (!Utilities.floatCompare(latitude, this.latitude)) {
+			setUpdated(true);
+		}
 		this.latitude = latitude;
 	}
 
@@ -224,6 +255,9 @@ public abstract class TrackStatusBase {
 	}
 
 	public void setCourse(float course) {
+		if (!Utilities.floatCompare(course, this.course)) {
+			setUpdated(true);
+		}
 		this.course = course;
 	}
 
@@ -232,6 +266,9 @@ public abstract class TrackStatusBase {
 	}
 
 	public void setHeading(int heading) {
+		if (heading != this.heading) {
+			setUpdated(true);
+		}
 		this.heading = heading;
 	}
 
@@ -240,6 +277,9 @@ public abstract class TrackStatusBase {
 	}
 
 	public void setSecond(int second) {
+		if (second != this.second) {
+			setUpdated(true);
+		}
 		this.second = second;
 	}
 
@@ -248,6 +288,9 @@ public abstract class TrackStatusBase {
 	}
 
 	public void setManeuver(int maneuver) {
+		if (maneuver != this.maneuver) {
+			setUpdated(true);
+		}
 		this.maneuver = maneuver;
 	}
 
@@ -256,6 +299,9 @@ public abstract class TrackStatusBase {
 	}
 
 	public void setRaim(boolean raim) {
+		if (raim != this.raim) {
+			setUpdated(true);
+		}
 		this.raim = raim;
 	}
 
@@ -264,6 +310,9 @@ public abstract class TrackStatusBase {
 	}
 
 	public void setRadio(int radio) {
+		if (radio != this.radio) {
+			setUpdated(true);
+		}
 		this.radio = radio;
 	}
 
@@ -280,6 +329,9 @@ public abstract class TrackStatusBase {
 	}
 
 	public void setAisVersion(int aisVersion) {
+		if (aisVersion != this.aisVersion) {
+			setUpdated(true);
+		}
 		this.aisVersion = aisVersion;
 	}
 
@@ -288,6 +340,9 @@ public abstract class TrackStatusBase {
 	}
 
 	public void setImo(int imo) {
+		if (imo != this.imo) {
+			setUpdated(true);
+		}
 		this.imo = imo;
 	}
 
@@ -296,7 +351,11 @@ public abstract class TrackStatusBase {
 	}
 
 	public void setCallSign(String callSign) {
-		this.callSign = callSign.replace("@", "");
+		String sCallSign = callSign.replace("@", "");
+		if (!sCallSign.equals(this.callSign)) {
+			setUpdated(true);
+		}
+		this.callSign = sCallSign;
 	}
 
 	public String getShipName() {
@@ -304,7 +363,11 @@ public abstract class TrackStatusBase {
 	}
 
 	public void setShipName(String shipName) {
-		this.shipName = shipName.replace("@", "");
+		String sShipName = shipName.replace("@", "");
+		if (!sShipName.equals(this.shipName)) {
+			setUpdated(true);
+		}
+		this.shipName = sShipName;
 	}
 
 	public int getShipType() {
@@ -312,6 +375,9 @@ public abstract class TrackStatusBase {
 	}
 
 	public void setShipType(int shipType) {
+		if (shipType != this.shipType) {
+			setUpdated(true);
+		}
 		this.shipType = shipType;
 	}
 
@@ -331,6 +397,9 @@ public abstract class TrackStatusBase {
 	}
 
 	public void setEpfd(int epfd) {
+		if (epfd != this.epfd) {
+			setUpdated(true);
+		}
 		this.epfd = epfd;
 	}
 
@@ -339,6 +408,9 @@ public abstract class TrackStatusBase {
 	}
 
 	public void setMonth(int month) {
+		if (month != this.month) {
+			setUpdated(true);
+		}
 		this.month = month;
 	}
 
@@ -347,6 +419,9 @@ public abstract class TrackStatusBase {
 	}
 
 	public void setDay(int day) {
+		if (day != this.day) {
+			setUpdated(true);
+		}
 		this.day = day;
 	}
 
@@ -355,6 +430,9 @@ public abstract class TrackStatusBase {
 	}
 
 	public void setHour(int hour) {
+		if (hour != this.hour) {
+			setUpdated(true);
+		}
 		this.hour = hour;
 	}
 
@@ -363,6 +441,9 @@ public abstract class TrackStatusBase {
 	}
 
 	public void setMinute(int minute) {
+		if (minute != this.minute) {
+			setUpdated(true);
+		}
 		this.minute = minute;
 	}
 
@@ -371,6 +452,9 @@ public abstract class TrackStatusBase {
 	}
 
 	public void setDraught(float draught) {
+		if (!Utilities.floatCompare(draught, this.draught)) {
+			setUpdated(true);
+		}
 		this.draught = draught;
 	}
 
@@ -379,7 +463,11 @@ public abstract class TrackStatusBase {
 	}
 
 	public void setDestination(String destination) {
-		this.destination = destination.replace("@", "");
+		String sDestination = destination.replace("@", "");
+		if (!sDestination.equals(this.destination)) {
+			setUpdated(true);
+		}
+		this.destination = sDestination;
 	}
 
 	public int getDte() {
@@ -387,6 +475,9 @@ public abstract class TrackStatusBase {
 	}
 
 	public void setDte(int dte) {
+		if (dte != this.dte) {
+			setUpdated(true);
+		}
 		this.dte = dte;
 	}
 
@@ -395,6 +486,9 @@ public abstract class TrackStatusBase {
 	}
 
 	public void setAssignedMode(int assignedMode) {
+		if (assignedMode != this.assignedMode) {
+			setUpdated(true);
+		}
 		this.assignedMode = assignedMode;
 	}
 
@@ -403,6 +497,9 @@ public abstract class TrackStatusBase {
 	}
 
 	public void setRegional(int regional) {
+		if (regional != this.regional) {
+			setUpdated(true);
+		}
 		this.regional = regional;
 	}
 
@@ -411,6 +508,9 @@ public abstract class TrackStatusBase {
 	}
 
 	public void setCs(boolean cs) {
+		if (cs != this.cs) {
+			setUpdated(true);
+		}
 		this.cs = cs;
 	}
 
@@ -419,6 +519,9 @@ public abstract class TrackStatusBase {
 	}
 
 	public void setDisplay(boolean display) {
+		if (display != this.display) {
+			setUpdated(true);
+		}
 		this.display = display;
 	}
 
@@ -427,6 +530,9 @@ public abstract class TrackStatusBase {
 	}
 
 	public void setDsc(boolean dsc) {
+		if (dsc != this.dsc) {
+			setUpdated(true);
+		}
 		this.dsc = dsc;
 	}
 
@@ -435,6 +541,9 @@ public abstract class TrackStatusBase {
 	}
 
 	public void setBand(boolean band) {
+		if (band != this.band) {
+			setUpdated(true);
+		}
 		this.band = band;
 	}
 
@@ -443,6 +552,9 @@ public abstract class TrackStatusBase {
 	}
 
 	public void setMsg22(boolean msg22) {
+		if (msg22 != this.msg22) {
+			setUpdated(true);
+		}
 		this.msg22 = msg22;
 	}
 
@@ -451,6 +563,9 @@ public abstract class TrackStatusBase {
 	}
 
 	public void setAssigned(boolean assigned) {
+		if (assigned != this.assigned) {
+			setUpdated(true);
+		}
 		this.assigned = assigned;
 	}
 
@@ -459,6 +574,9 @@ public abstract class TrackStatusBase {
 	}
 
 	public void setCommFlag(int commFlag) {
+		if (commFlag != this.commFlag) {
+			setUpdated(true);
+		}
 		this.commFlag = commFlag;
 	}
 
@@ -467,6 +585,9 @@ public abstract class TrackStatusBase {
 	}
 
 	public void setAltitudeSensor(int altitudeSensor) {
+		if (altitudeSensor != this.altitudeSensor) {
+			setUpdated(true);
+		}
 		this.altitudeSensor = altitudeSensor;
 	}
 
@@ -475,6 +596,9 @@ public abstract class TrackStatusBase {
 	}
 
 	public void setAltitude(int altitude) {
+		if (altitude != this.altitude) {
+			setUpdated(true);
+		}
 		this.altitude = altitude;
 	}
 
