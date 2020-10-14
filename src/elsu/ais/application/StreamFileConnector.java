@@ -23,7 +23,7 @@ public class StreamFileConnector extends ConnectorBase {
 			this.speed = speed;
 		}
 		
-		System.out.println("client config loaded, " +
+		System.out.println(getClass().toString() + ", StreamFileConnector(), " + "client config loaded, " +
 			"filename: " + filename + ", " +
 			"speed: " + speed);
 	}
@@ -61,7 +61,7 @@ public class StreamFileConnector extends ConnectorBase {
 			try {
 				sendError("file, " + ex.getMessage());
 			} catch (Exception exi) {
-				System.out.println("error, " + "file" + ", " + exi.getMessage());
+				System.out.println(getClass().toString() + ", run(), " + "file connector, " + exi.getMessage());
 			}
 		} finally {
 			isShutdown = true;
@@ -70,7 +70,7 @@ public class StreamFileConnector extends ConnectorBase {
 			try {
 				sendMessage("file closed - shutdown.");
 			} catch (Exception ex2) {
-				System.out.println("error, " + "file" + ", " + ex2.getMessage());
+				System.out.println(getClass().toString() + ", run(), " + "file connector-2, " + ex2.getMessage());
 			}
 		}
 	}

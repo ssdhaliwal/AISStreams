@@ -320,7 +320,7 @@ public abstract class TrackStatusBase {
 		return commState;
 	}
 
-	private void setCommState(CommunicationState commState) {
+	public void setCommState(CommunicationState commState) {
 		this.commState = commState;
 	}
 
@@ -688,6 +688,10 @@ public abstract class TrackStatusBase {
 
 	public Instant getCreateTime() {
 		return createTime;
+	}
+	
+	public void setCreateTime(Instant time) {
+		this.createTime = time;
 	}
 
 	public void setCreateTime() {

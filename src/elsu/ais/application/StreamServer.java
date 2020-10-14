@@ -202,7 +202,7 @@ public class StreamServer extends WebSocketServer implements IAISEventListener, 
 
 			// StreamServer server = new StreamServer(null, config, null, connectors, null);
 		} catch (Exception ex) {
-			System.out.println("error starting app, " + ex.getMessage());
+			System.out.println("elsu.ais.application, main(), " + "unknown, " + ex.getMessage());
 		}
 	}
 

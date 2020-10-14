@@ -1,13 +1,16 @@
 package elsu.ais.monitor;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.module.SimpleModule;
 
 import elsu.ais.base.AISMessageBase;
 import elsu.ais.resources.ITrackListener;
+import elsu.common.FileUtils;
 import elsu.support.ConfigLoader;
 
 public class TrackWatcher {
@@ -30,10 +33,62 @@ public class TrackWatcher {
 		} catch (Exception ex) {
 			latencyCleanupSpan = 5;
 		}
+		
+		try {
+			latencyPurgeDays = Integer
+					.parseInt(config.getProperty("application.services.key.latency.purge.days").toString());
+		} catch (Exception ex) {
+			latencyPurgeDays = 5;
+		}
 
-		// initialize the queueMonitor
-		queueMonitor = new TrackQueueMonitor(this);
-		queueMonitor.start();
+		// load existing prior history if available
+		new File(getStatusPath()).mkdirs();
+		restoreTrackHistoryFromFile();
+
+		// start the cleaner thread
+		TrackQueueCleanup cleaner = new TrackQueueCleanup(this);
+		cleaner.start();
+	}
+	
+	private void restoreTrackHistoryFromFile() {
+		try {
+			objectModule.addDeserializer(TrackStatus.class, new TrackStatusDeserializer());
+			objectMapper.registerModule(objectModule);
+			
+			ArrayList<String> input = null;
+			input = FileUtils.readFileToList(getStatusPath()+"/trackStatus.log");
+			
+			TrackStatus status = null;
+			for (int i = 0; i < input.size(); i++) {
+				status = objectMapper.readValue(input.get(i), TrackStatus.class);
+				trackStatus.put(status.getMmsi(), status);
+			}
+		} catch (Exception exi) {
+			System.out.println(getClass().toString() + ", restoreTrackHistoryFromFile(), " + exi.getMessage());
+		}
+
+		System.out.println("TrackStatus/ total: " + trackStatus.size() + "/ loaded: " + getStatusPath()+"/trackStatus.log");
+	}
+	
+	public void saveTrackHistoryToFile() {
+		try {
+			TrackStatus status = null;
+			List<Object> output = new ArrayList<Object>();
+			for (Integer mmsi : trackStatus.keySet()) {
+				Thread.yield();
+				
+				try {
+					status = trackStatus.get(mmsi);
+					output.add(status.toString());
+				} catch (Exception exi) {
+				}
+			}
+			
+			FileUtils.writeFile(getStatusPath()+"/trackStatus.log", output, true);
+			System.out.println("TrackStatus/ total: " + trackStatus.size() + "/ saved: " + getStatusPath()+"/trackStatus.log");
+		} catch (Exception exi) {
+			System.out.println(getClass().toString() + ", saveTrackHistoryToFile(), " + exi.getMessage());
+		}
 	}
 
 	public void registerListener(ITrackListener listener) {
@@ -58,7 +113,7 @@ public class TrackWatcher {
 					try {
 						sendTrackError(ex, message);
 					} catch (Exception exi) {
-						System.out.println("trackWatcher notification error; " + exi.getMessage() + "; " + message);
+						System.out.println(getClass().toString() + ", processTrack(), " + "notification, " + exi.getMessage() + ", " + message);
 					}
 				}
 			}
@@ -66,7 +121,7 @@ public class TrackWatcher {
 			try {
 				sendTrackError(ex, message);
 			} catch (Exception exi) {
-				System.out.println("trackWatcher parsing error; " + exi.getMessage() + "; " + message);
+				System.out.println(getClass().toString() + ", processTrack(), " + "parsing, " + exi.getMessage() + ", " + message);
 			}
 		}
 	}
@@ -81,7 +136,7 @@ public class TrackWatcher {
 				listener.onTrackError(ex, message.toString());
 			}
 		} catch (Exception exi) {
-			System.out.println("trackWatcher sendTrackError; " + exi.getMessage() + "; " + message);
+			System.out.println(getClass().toString() + ", sendTrackError(), " + exi.getMessage() + ", " + message);
 		}
 	}
 
@@ -91,7 +146,7 @@ public class TrackWatcher {
 				listener.onTrackAdd(track.toJSONArray());
 			}
 		} catch (Exception exi) {
-			System.out.println("trackWatcher sendTrackAdd; " + exi.getMessage() + "; " + track);
+			System.out.println(getClass().toString() + ", sendTrackAdd(), " + exi.getMessage() + ", " + track);
 		}
 	}
 
@@ -101,7 +156,7 @@ public class TrackWatcher {
 				listener.onTrackUpdate(track.toJSONArray());
 			}
 		} catch (Exception exi) {
-			System.out.println("trackWatcher sendTrackUpdate; " + exi.getMessage() + "; " + track);
+			System.out.println(getClass().toString() + ", sendTrackUpdate(), " + exi.getMessage() + ", " + track);
 		}
 	}
 
@@ -111,6 +166,18 @@ public class TrackWatcher {
 
 	public int getLatencyCleanupSpan() {
 		return latencyCleanupSpan;
+	}
+
+	public int getLatencyPurgeDays() {
+		return latencyPurgeDays;
+	}
+	
+	public String getStatusPath() {
+		return statusPath;
+	}
+	
+	public List<ITrackListener> getListeners() {
+		return listeners;
 	}
 
 	public void addListener(ITrackListener listener) {
@@ -124,68 +191,16 @@ public class TrackWatcher {
 	public void clearListeners() {
 		listeners.clear();
 	}
-
-	public void checkQueueStatus() {
-		synchronized (lockSearch) {
-			if (getQueueId() == 1) {
-				// start the cleaner thread
-				TrackQueueCleanup cleaner = new TrackQueueCleanup(trackStatusHistory, trackStatusQ2, listeners);
-				cleaner.start();
-
-				trackStatusQ2 = new HashMap<Integer, TrackStatus>();
-				setQueueId(2);
-			} else {
-				// start the cleaner thread
-				TrackQueueCleanup cleaner = new TrackQueueCleanup(trackStatusHistory, trackStatusQ1, listeners);
-				cleaner.start();
-
-				trackStatusQ1 = new HashMap<Integer, TrackStatus>();
-				setQueueId(1);
-			}
-
-			System.out.println("checkQueueStatus/ Q:" + getQueueId() + "/1: " + trackStatusQ1.size() + "/2: " + trackStatusQ2.size() + "/H: " + trackStatusHistory.size());
-		}
-	}
-
-	public int getQueueId() {
-		return queueId;
-	}
-
-	public void setQueueId(int id) {
-		this.queueId = id;
+	
+	public HashMap<Integer, TrackStatus> getTrackStatus() {
+		return trackStatus;
 	}
 
 	public TrackStatus getTrackStatus(int key) {
 		TrackStatus status = null;
 
 		synchronized (lockSearch) {
-			if (getQueueId() == 1) {
-				status = trackStatusQ1.get(key);
-				
-				if (status == null) {
-					status = trackStatusQ2.get(key);
-				}
-			} else {
-				status = trackStatusQ2.get(key);
-				
-				if (status == null) {
-					status = trackStatusQ1.get(key);
-				}
-			}
-
-			// if still null, see if in history pull and remove it
-			if (status == null) {
-				try {
-					status = trackStatusHistory.get(key);
-					if (status != null) {
-						status.setCreateTime();
-					}
-				} catch (Exception ex) {
-					System.out.println("track history retrieval error; " + ex.getMessage());
-				}
-			}
-
-			// System.out.println("getTrackStatus/ Q:" + getQueueId() + "/1: " + trackStatusQ1.size() + "/2: " + trackStatusQ2.size() + "/H: " + trackStatusHistory.size() + "/mmsi: " + key);
+			status = trackStatus.get(key);
 		}
 
 		return status;
@@ -193,28 +208,17 @@ public class TrackWatcher {
 
 	public void updateTrackStatus(TrackStatus status) {
 		synchronized (lockSearch) {
-			// System.out.println("updateTrackStatus/ Q:" + getQueueId() + "/ " + trackStatusQ1.size() + "/ " + status);
-
-			if (getQueueId() == 1) {
-				trackStatusQ1.put(status.getMmsi(), status);
-				trackStatusQ2.remove(status.getMmsi());
-			} else {
-				trackStatusQ2.put(status.getMmsi(), status);
-				trackStatusQ1.remove(status.getMmsi());
-			}
+			trackStatus.put(status.getMmsi(), status);
 		}
 	}
 	
 	public ArrayList<String> getTrackPicture() {
 		ArrayList<String> result = new ArrayList<String>();
 		
-		synchronized (lockSearch) {
-			for(int mmsi : trackStatusQ1.keySet()) {
-				result.add((trackStatusQ1.get(mmsi)).toJSONArray());
-			}
-			for(int mmsi : trackStatusQ2.keySet()) {
-				result.add((trackStatusQ2.get(mmsi)).toJSONArray());
-			}
+		for(int mmsi : trackStatus.keySet()) {
+			try {
+				result.add((trackStatus.get(mmsi)).toJSONArray());
+			} catch (Exception exi) {}
 		}
 		
 		return result;
@@ -222,16 +226,14 @@ public class TrackWatcher {
 
 	private int latencyCleanupSpan = 5;
 	private int latencyCleanupTime = 60000;
+	private int latencyPurgeDays = 5;
+	private String statusPath = System.getProperty("user.dir") + "/config/status";
 
 	private Object lockSearch = new Object();
+	public static SimpleModule objectModule = new SimpleModule();
 	public static ObjectMapper objectMapper = new ObjectMapper();
 	
 	private List<ITrackListener> listeners = new ArrayList<>();
 
-	private int queueId = 1;
-	private HashMap<Integer, TrackStatus> trackStatusQ1 = new HashMap<Integer, TrackStatus>();
-	private HashMap<Integer, TrackStatus> trackStatusQ2 = new HashMap<Integer, TrackStatus>();
-
-	private HashMap<Integer, TrackStatus> trackStatusHistory = new HashMap<Integer, TrackStatus>();
-	private TrackQueueMonitor queueMonitor = null;
+	private HashMap<Integer, TrackStatus> trackStatus = new HashMap<Integer, TrackStatus>();
 }

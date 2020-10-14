@@ -69,7 +69,7 @@ public class StreamNetworkConnector extends ConnectorBase {
 			siteId = id;
 		}
 		
-		System.out.println("client config loaded, " +
+		System.out.println(getClass().toString() + ", StreamNetworkConnector(), " + "client config loaded, " +
 			"hostUri: " + hostUri + ", " +
 			"hostPort: " + hostPort + ", " +
 			"noDataTimeout: " + noDataTimeout + ", " +
@@ -100,13 +100,11 @@ public class StreamNetworkConnector extends ConnectorBase {
 
 	public void sendError(String error) throws Exception {
 		messageWriter.write(error + GlobalStack.LINESEPARATOR);
-		// System.out.println(error);
 		super.sendError(error);
 	}
 
 	public void sendMessage(String message) throws Exception {
 		messageWriter.write(message + GlobalStack.LINESEPARATOR);
-		// System.out.println(message);
 		super.sendMessage(message);
 	}
 
@@ -148,7 +146,7 @@ public class StreamNetworkConnector extends ConnectorBase {
 							try {
 								sendMessage("client monitor started...");
 							} catch (Exception ex2) {
-								System.out.println("error, " + siteId + ", client monitor start error, " + ex2.getMessage());
+								System.out.println(getClass().toString() + ", run(), " + "network monitor, " + ex2.getMessage());
 							}
 
 							while (isRunning && isMonitorRunning && !isShutdown) {
@@ -179,7 +177,7 @@ public class StreamNetworkConnector extends ConnectorBase {
 									try {
 										sendError("client monitor error, " + exi.getMessage());
 									} catch (Exception ex) {
-										System.out.println("error, " + siteId + ", client monitor run error, " + ex.getMessage());
+										System.out.println(getClass().toString() + ", run(), " + "network monitor-2, " + ex.getMessage());
 									}
 								}
 							}
@@ -268,7 +266,7 @@ public class StreamNetworkConnector extends ConnectorBase {
 			try {
 				sendError("client socket error, " + ex.getMessage());
 			} catch (Exception ex2) {
-				System.out.println("error, " + siteId + ", client socket error, " + ex2.getMessage());
+				System.out.println(getClass().toString() + ", run(), " + "network connector, " + ex2.getMessage());
 			}
 		} finally {
 			isShutdown = true;
@@ -286,7 +284,7 @@ public class StreamNetworkConnector extends ConnectorBase {
 			try {
 				sendMessage("client socket closed - shutdown.");
 			} catch (Exception ex2) {
-				System.out.println("error, " + siteId + ", client socket error, " + ex2.getMessage());
+				System.out.println(getClass().toString() + ", run(), " + "network connector-2, " + ex2.getMessage());
 			}
 		}
 	}
