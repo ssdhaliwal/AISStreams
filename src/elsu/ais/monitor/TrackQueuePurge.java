@@ -45,36 +45,42 @@ public class TrackQueuePurge extends Thread {
 			while (!isInterrupted()) {
 				Thread.sleep(latencyCleanupSpan * latencyCleanupTime);
 				
-				int days = 0, purged = 0;
+				int purged = 0;
 				TrackStatus status = null;
 				
 				// start the cleanup monitor
-				Set<Integer> keys = trackStatus.keySet();
-				for (Integer key : keys) {
-					Thread.yield();
-					
-					try {
-						status = trackStatus.get(key);
-
-						if (status.getUpdateCounter() == 0) {
-							if (Days.daysBetween(status.getCreateTime(), Instant.now()).getDays() == latencyPurgeDays) {
-								trackStatus.remove(key);
-
-								purged++;
+				try {
+					Set<Integer> keys = trackStatus.keySet();
+					for (Integer key : keys) {
+						Thread.yield();
+						
+						try {
+							status = trackStatus.get(key);
+	
+							if (status != null) {
+								if (status.getUpdateCounter() == 0) {
+									if (Days.daysBetween(status.getCreateTime(), Instant.now()).getDays() == latencyPurgeDays) {
+										trackStatus.remove(key);
+		
+										purged++;
+									}
+								}
 							}
+						} catch (Exception ex) {
+							System.out.println(getClass().toString() + ", run(), " + "track purge, " + ex.getMessage());
 						}
-					} catch (Exception ex) {
-						System.out.println(getClass().toString() + ", run(), " + "track purge, " + ex.getMessage());
+	
+						Thread.yield();
 					}
-
-					Thread.yield();
+					
+					System.out.println("TrackStatus/ total: " + trackStatus.size() + "/ purged: " + purged);
+				} catch (Exception ex) {
+					System.out.println(getClass().toString() + ", run(), " + "track purge-2, " + ex.getMessage());
 				}
-				
-				System.out.println("TrackStatus/ total: " + trackStatus.size() + "/ purged: " + purged);
 			}
 		} catch (Exception ex) {
 			// log error for tracking
-			System.out.println(getClass().toString() + ", run(), " + "track purge-2, " + ex.getMessage());
+			System.out.println(getClass().toString() + ", run(), " + "track purge-3, " + ex.getMessage());
 		} finally {
 		}
 	}

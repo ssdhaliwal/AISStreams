@@ -48,6 +48,10 @@ public class TrackWatcher {
 		// start the cleaner thread
 		TrackQueueCleanup cleaner = new TrackQueueCleanup(this);
 		cleaner.start();
+
+		// start the cleaner thread
+		TrackQueuePurge purger = new TrackQueuePurge(this);
+		purger.start();
 	}
 	
 	private void restoreTrackHistoryFromFile() {
