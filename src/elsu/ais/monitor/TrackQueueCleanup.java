@@ -2,7 +2,7 @@ package elsu.ais.monitor;
 
 import java.util.HashMap;
 import java.util.List;
-
+import java.util.concurrent.ConcurrentHashMap;
 
 import elsu.ais.base.AISMessageBase;
 import elsu.ais.resources.ITrackListener;
@@ -10,7 +10,7 @@ import elsu.ais.resources.ITrackListener;
 public class TrackQueueCleanup extends Thread {
 	private TrackWatcher watcher = null;
 	private List<ITrackListener> listeners = null;
-	private HashMap<Integer, TrackStatus> trackStatus = null;
+	private ConcurrentHashMap<Integer, TrackStatus> trackStatus = null;
 	private int latencyCleanupSpan = 5;
 	private int latencyCleanupTime = 60000;
 

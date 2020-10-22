@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
@@ -196,7 +197,7 @@ public class TrackWatcher {
 		listeners.clear();
 	}
 	
-	public HashMap<Integer, TrackStatus> getTrackStatus() {
+	public ConcurrentHashMap<Integer, TrackStatus> getTrackStatus() {
 		return trackStatus;
 	}
 
@@ -239,5 +240,5 @@ public class TrackWatcher {
 	
 	private List<ITrackListener> listeners = new ArrayList<>();
 
-	private HashMap<Integer, TrackStatus> trackStatus = new HashMap<Integer, TrackStatus>();
+	private ConcurrentHashMap<Integer, TrackStatus> trackStatus = new ConcurrentHashMap<Integer, TrackStatus>();
 }

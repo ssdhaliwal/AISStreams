@@ -3,6 +3,7 @@ package elsu.ais.monitor;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.joda.time.Days;
 import org.joda.time.Instant;
@@ -13,7 +14,7 @@ import elsu.ais.resources.ITrackListener;
 public class TrackQueuePurge extends Thread {
 	private TrackWatcher watcher = null;
 	private List<ITrackListener> listeners = null;
-	private HashMap<Integer, TrackStatus> trackStatus = null;
+	private ConcurrentHashMap<Integer, TrackStatus> trackStatus = null;
 	private int latencyCleanupSpan = 5;
 	private int latencyCleanupTime = 60000;
 	private int latencyPurgeDays = 5; 
@@ -50,17 +51,16 @@ public class TrackQueuePurge extends Thread {
 				
 				// start the cleanup monitor
 				try {
-					Set<Integer> keys = trackStatus.keySet();
-					for (Integer key : keys) {
+					for (Integer mmsi : trackStatus.keySet()) {
 						Thread.yield();
 						
 						try {
-							status = trackStatus.get(key);
-	
+							status = trackStatus.get(mmsi);
+							
 							if (status != null) {
 								if (status.getUpdateCounter() == 0) {
 									if (Days.daysBetween(status.getCreateTime(), Instant.now()).getDays() == latencyPurgeDays) {
-										trackStatus.remove(key);
+										trackStatus.remove(mmsi);
 		
 										purged++;
 									}
