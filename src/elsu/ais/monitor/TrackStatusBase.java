@@ -696,10 +696,15 @@ public abstract class TrackStatusBase {
 
 	public void setCreateTime() {
 		this.createTime = Instant.now();
+		setUpdateTime(this.createTime);
 	}
 
 	public Instant getUpdateTime() {
 		return updateTime;
+	}
+
+	private void setUpdateTime(Instant time) {
+		this.updateTime = time;
 	}
 
 	public void setUpdateTime() {
@@ -768,7 +773,7 @@ public abstract class TrackStatusBase {
 	private boolean updated = false;
 	private boolean removed = false;
 	private Instant createTime = Instant.now();
-	private Instant updateTime = Instant.now();
+	private Instant updateTime = createTime;
 	
 	private MutablePeriod period = new MutablePeriod();
 }

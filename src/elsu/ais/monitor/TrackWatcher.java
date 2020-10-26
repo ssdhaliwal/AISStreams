@@ -73,8 +73,12 @@ public class TrackWatcher {
 				line = input.get(i);
 				
 				if (!line.isEmpty()) {
-					status = objectMapper.readValue(line, TrackStatus.class);
-					trackStatus.put(status.getMmsi(), status);
+					try {
+						status = objectMapper.readValue(line, TrackStatus.class);
+						trackStatus.put(status.getMmsi(), status);
+					} catch (Exception exi) {
+						System.out.println(getClass().toString() + ", restoreTrackHistoryFromFile()-1, " + exi.getMessage() + ", " + line);
+					}
 				}
 			}
 		} catch (Exception exi) {
