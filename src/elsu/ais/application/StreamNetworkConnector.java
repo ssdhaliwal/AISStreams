@@ -8,13 +8,13 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.regex.Matcher;
 
-import elsu.ais.exceptions.IncompleteFragmentException;
 import elsu.common.GlobalStack;
+import elsu.common.CollectionUtils;
 import elsu.io.FileChannelTextWriter;
 import elsu.io.FileRolloverPeriodicityType;
-import elsu.sentence.Sentence;
 import elsu.sentence.SentenceBase;
 import elsu.support.ConfigLoader;
 
@@ -103,7 +103,7 @@ public class StreamNetworkConnector extends ConnectorBase {
 		super.sendError(error);
 	}
 
-	public void sendMessage(String message) throws Exception {
+	public void sendMessage(ArrayList<String> message) throws Exception {
 		messageWriter.write(message + GlobalStack.LINESEPARATOR);
 		super.sendMessage(message);
 	}
@@ -114,7 +114,7 @@ public class StreamNetworkConnector extends ConnectorBase {
 			Thread tMonitor = null;
 			Thread tSender = null;
 
-			while (!isShutdown) {
+			while (!Thread.currentThread().isInterrupted() && !isShutdown) {
 				// if socket is not running, try to start it
 				if (!isRunning) {
 					try {
@@ -144,7 +144,7 @@ public class StreamNetworkConnector extends ConnectorBase {
 							isMonitorRunning = true;
 							
 							try {
-								sendMessage("client monitor started...");
+								System.out.println("client monitor started...");
 							} catch (Exception ex2) {
 								System.out.println(getClass().toString() + ", run(), " + "network monitor, " + ex2.getMessage());
 							}
@@ -199,7 +199,8 @@ public class StreamNetworkConnector extends ConnectorBase {
 							new BufferedWriter(new OutputStreamWriter(clientSocket.getOutputStream())));
 
 					// this is to prevent socket to stay open after error
-					String line = null, tags = "";
+					String line = null, sentence = "", message[] = null;
+					ArrayList<String> messages = new ArrayList<String>();
 					Matcher hMatch = null;
 					systemGCCounter = 0L;
 					try (BufferedReader in = new BufferedReader(
@@ -219,8 +220,23 @@ public class StreamNetworkConnector extends ConnectorBase {
 									if (line.matches("(?s).*!..VD[OM].*")) {
 										hMatch = SentenceBase.messageVDOPattern.matcher(line);
 										while (hMatch.find()) {
-											tags = hMatch.group(0);
-											sendMessage(tags);
+											sentence = hMatch.group(0);
+											
+											// if complete message
+											message = sentence.split(",");
+											if (message[1].equals(message[2])) {
+												messages.add(sentence);
+
+												sendMessage(messages);
+												messages.clear();
+											} else if (Integer.valueOf(message[1]) == 1) {
+												if (messages.size() > 0) {
+													sendError("partial fragment, pending queue cleared, [" + 
+															CollectionUtils.ArrayListToString(messages) + "]");
+													messages.clear();
+												}
+												messages.add(sentence);
+											}
 										}
 									}
 								} else {

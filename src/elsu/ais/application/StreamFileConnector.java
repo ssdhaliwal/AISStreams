@@ -38,7 +38,7 @@ public class StreamFileConnector extends ConnectorBase {
 			// until shutdown
 			String line = "";
 			int i = 0;
-			while (!isShutdown) {
+			while (!Thread.currentThread().isInterrupted() && !isShutdown) {
 				// loop and send file data
 				if (i < fileData.size()) {
 					line = fileData.get(i);

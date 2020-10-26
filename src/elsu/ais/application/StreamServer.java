@@ -39,6 +39,7 @@ public class StreamServer extends WebSocketServer implements IAISEventListener, 
 		}
 	}
 
+	// websocket listeners
 	@Override
 	public void onClose(WebSocket conn, int code, String reason, boolean remote) {
 		System.out.println(
@@ -83,6 +84,7 @@ public class StreamServer extends WebSocketServer implements IAISEventListener, 
 		System.out.println("server started successfully");
 	}
 
+	// ais message stream connector listeners
 	@Override
 	public void onAISError(Exception ex, Object o, String message) {
 		System.out.println("{\"message\": " + message + ", \"state\": \"error\"}");
@@ -100,6 +102,7 @@ public class StreamServer extends WebSocketServer implements IAISEventListener, 
 		// broadcast("{\"message\": " + o + ", \"state\": \"update\"}");
 	}
 
+	// track watcher listeners
 	@Override
 	public synchronized void onTrackError(Exception ex, String message) {
 		System.out.println("track error; " + ex.getMessage() + "; "+ message);
