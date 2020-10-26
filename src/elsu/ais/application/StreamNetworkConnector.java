@@ -103,9 +103,9 @@ public class StreamNetworkConnector extends ConnectorBase {
 		super.sendError(error);
 	}
 
-	public void sendMessage(ArrayList<String> message) throws Exception {
-		messageWriter.write(message + GlobalStack.LINESEPARATOR);
-		super.sendMessage(message);
+	public void sendMessage(ArrayList<String> messages) throws Exception {
+		messageWriter.write(messages + GlobalStack.LINESEPARATOR);
+		super.sendMessage(messages);
 	}
 
 	@Override
@@ -227,13 +227,19 @@ public class StreamNetworkConnector extends ConnectorBase {
 											if (message[1].equals(message[2])) {
 												messages.add(sentence);
 
-												sendMessage(messages);
-												messages.clear();
-											} else if (Integer.valueOf(message[1]) == 1) {
+												if (messages.size() == Integer.valueOf(message[1])) {
+													sendMessage(messages);
+													messages = new ArrayList<String>();
+												} else {
+													sendError("partial fragment, pending queue cleared, [" + 
+															CollectionUtils.ArrayListToString(messages) + "]");
+													messages = new ArrayList<String>();
+												}
+											} else if (Integer.valueOf(message[2]) == 1) {
 												if (messages.size() > 0) {
 													sendError("partial fragment, pending queue cleared, [" + 
 															CollectionUtils.ArrayListToString(messages) + "]");
-													messages.clear();
+													messages = new ArrayList<String>();
 												}
 												messages.add(sentence);
 											}

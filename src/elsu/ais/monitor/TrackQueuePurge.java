@@ -1,5 +1,6 @@
 package elsu.ais.monitor;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
@@ -43,6 +44,8 @@ public class TrackQueuePurge extends Thread {
 	@Override
 	public void run() {
 		try {
+			ArrayList<TrackStatus> tracks = new ArrayList<TrackStatus>();
+
 			while (!isInterrupted()) {
 				Thread.sleep(latencyCleanupSpan * latencyCleanupTime);
 				
@@ -51,6 +54,7 @@ public class TrackQueuePurge extends Thread {
 				
 				// start the cleanup monitor
 				try {
+					tracks.clear();
 					for (Integer mmsi : trackStatus.keySet()) {
 						Thread.yield();
 						
@@ -59,8 +63,8 @@ public class TrackQueuePurge extends Thread {
 							
 							if (status != null) {
 								if (status.getUpdateCounter() == 0) {
-									if (Days.daysBetween(status.getCreateTime(), Instant.now()).getDays() == latencyPurgeDays) {
-										trackStatus.remove(mmsi);
+									if (Days.daysBetween(status.getUpdateTime(), Instant.now()).getDays() >= latencyPurgeDays) {
+										tracks.add(trackStatus.remove(mmsi));
 		
 										purged++;
 									}
@@ -74,6 +78,9 @@ public class TrackQueuePurge extends Thread {
 					}
 					
 					System.out.println("TrackStatus/ total: " + trackStatus.size() + "/ purged: " + purged);
+					if (tracks.size() > 0) {
+						watcher.saveTrackPurgeToFile(tracks);
+					}
 				} catch (Exception ex) {
 					System.out.println(getClass().toString() + ", run(), " + "track purge-2, " + ex.getMessage());
 				}

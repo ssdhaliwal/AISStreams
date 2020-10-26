@@ -26,19 +26,23 @@ public class AISParserWorker implements Runnable {
 	
 	@Override
 	public void run() {
-		// TODO Auto-generated method stub
 		ArrayList<String> messages = null;
 		while (!Thread.currentThread().isInterrupted())
 		{
 			try {
-				messages = this.messageQueue.poll();
+				synchronized(messageQueue) {
+					try {
+						messages = this.messageQueue.poll();
+					} catch (Exception exi) {}
+				}
+				
 				if (messages != null) {
 					getSentenceFactory().parseSentence(messages);
 				}
 				
 				Thread.yield();
 			} catch (Exception ex) {
-				getSentenceFactory().notifyError(null, null, "error processing message, [" + CollectionUtils.ArrayListToString(messages) + "], " + ex.getMessage());
+				getSentenceFactory().notifyError(null, null, "error processing message, " + this.name + ", [" + CollectionUtils.ArrayListToString(messages) + "], " + ex.getMessage());
 			}
 		}
 	}

@@ -209,7 +209,7 @@ public class StreamServer extends WebSocketServer implements IAISEventListener, 
 		}
 	}
 
-	private boolean debug = false;
+	public static boolean debug = false;
 	private TrackWatcher watcher = null;
 	private ArrayList<ConnectorBase> connectors = new ArrayList<>();
 	private ConfigLoader config = null;

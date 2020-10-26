@@ -20,8 +20,8 @@ public abstract class ConnectorBase extends Thread {
 		ExecutorService workerPool = Executors.newFixedThreadPool(10);
 
 		// create workers
-		for(int i = 0; i < 10; i++) {
-			getAISWorkers()[i] = new AISParserWorker("aisworker_" + i, messageQueue);
+		for(int i = 0; i < max_threads; i++) {
+			getAISWorkers()[i] = new AISParserWorker("aisworker_" + i, getMessageQueue());
 			workerPool.execute(getAISWorkers()[i]);
 		}
 	
@@ -41,13 +41,13 @@ public abstract class ConnectorBase extends Thread {
 	}
 	
 	public void addListener(IAISEventListener listener) {
-		for(int i = 0; i < 10; i++) {
+		for(int i = 0; i < max_threads; i++) {
 			(getAISWorkers()[i]).getSentenceFactory().addEventListener(listener);
 		}
 	}
 
 	public void removeListener(IAISEventListener listener) {
-		for(int i = 0; i < 10; i++) {
+		for(int i = 0; i < max_threads; i++) {
 			(getAISWorkers()[i]).getSentenceFactory().removeEventListener(listener);
 		}
 	}
@@ -57,7 +57,9 @@ public abstract class ConnectorBase extends Thread {
 	}
 
 	public void sendMessage(ArrayList<String> messages) throws Exception {
-		messageQueue.add(messages);
+		synchronized(messageQueue) {
+			messageQueue.add(messages);
+		}
 	}
 
 	public void sendMessage(String message) throws Exception {
@@ -68,8 +70,9 @@ public abstract class ConnectorBase extends Thread {
 		}
 	}
 
+	private int max_threads = 20;
 	private ExecutorService workerPool = null;
-	private AISParserWorker[] aisWorkers = null;
+	private AISParserWorker[] aisWorkers = new AISParserWorker[max_threads];
 	private ConcurrentLinkedQueue<ArrayList<String>> messageQueue = new ConcurrentLinkedQueue<ArrayList<String>>();
 	private SentenceFactory sentenceFactory = new SentenceFactory();
 }

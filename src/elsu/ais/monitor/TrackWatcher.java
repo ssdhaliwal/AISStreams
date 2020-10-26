@@ -1,10 +1,14 @@
 package elsu.ais.monitor;
 
 import java.io.File;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
+
+import org.joda.time.DateTime;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
@@ -34,7 +38,7 @@ public class TrackWatcher {
 		} catch (Exception ex) {
 			latencyCleanupSpan = 5;
 		}
-		
+
 		try {
 			latencyPurgeDays = Integer
 					.parseInt(config.getProperty("application.services.key.latency.purge.days").toString());
@@ -54,45 +58,75 @@ public class TrackWatcher {
 		TrackQueuePurge purger = new TrackQueuePurge(this);
 		purger.start();
 	}
-	
+
 	private void restoreTrackHistoryFromFile() {
 		try {
 			objectModule.addDeserializer(TrackStatus.class, new TrackStatusDeserializer());
 			objectMapper.registerModule(objectModule);
-			
+
+			String line = "";
 			ArrayList<String> input = null;
-			input = FileUtils.readFileToList(getStatusPath()+"/trackStatus.log");
-			
+			input = FileUtils.readFileToList(getStatusPath() + "/trackStatus.log");
+
 			TrackStatus status = null;
 			for (int i = 0; i < input.size(); i++) {
-				status = objectMapper.readValue(input.get(i), TrackStatus.class);
-				trackStatus.put(status.getMmsi(), status);
+				line = input.get(i);
+				
+				if (!line.isEmpty()) {
+					status = objectMapper.readValue(line, TrackStatus.class);
+					trackStatus.put(status.getMmsi(), status);
+				}
 			}
 		} catch (Exception exi) {
 			System.out.println(getClass().toString() + ", restoreTrackHistoryFromFile(), " + exi.getMessage());
 		}
 
-		System.out.println("TrackStatus/ total: " + trackStatus.size() + "/ loaded: " + getStatusPath()+"/trackStatus.log");
+		System.out.println(
+				"TrackStatus/ total: " + trackStatus.size() + "/ loaded: " + getStatusPath() + "/trackStatus.log");
 	}
-	
+
 	public void saveTrackHistoryToFile() {
 		try {
 			TrackStatus status = null;
 			List<Object> output = new ArrayList<Object>();
 			for (Integer mmsi : trackStatus.keySet()) {
 				Thread.yield();
-				
+
 				try {
 					status = trackStatus.get(mmsi);
 					output.add(status.toString());
 				} catch (Exception exi) {
 				}
 			}
-			
-			FileUtils.writeFile(getStatusPath()+"/trackStatus.log", output, true);
-			System.out.println("TrackStatus/ total: " + trackStatus.size() + "/ saved: " + getStatusPath()+"/trackStatus.log");
+
+			FileUtils.writeFile(getStatusPath() + "/trackStatus.log", output, true);
+			System.out.println(
+					"TrackStatus/ total: " + trackStatus.size() + "/ saved: " + getStatusPath() + "/trackStatus.log");
 		} catch (Exception exi) {
 			System.out.println(getClass().toString() + ", saveTrackHistoryToFile(), " + exi.getMessage());
+		}
+	}
+
+	public void saveTrackPurgeToFile(ArrayList<TrackStatus> tracks) {
+		try {
+			TrackStatus status = null;
+			List<Object> output = new ArrayList<Object>();
+			for (int i = 0; i < tracks.size(); i++) {
+				Thread.yield();
+
+				try {
+					status = tracks.get(i);
+					output.add(status.toString());
+				} catch (Exception exi) {
+				}
+			}
+
+			FileUtils.writeFile(
+					getStatusPath() + "/trackPurge_"
+							+ new SimpleDateFormat("yyyyMMddHHmm").format(Calendar.getInstance().getTime()) + ".log",
+					output, true);
+		} catch (Exception exi) {
+			System.out.println(getClass().toString() + ", saveTrackPurgeToFile(), " + exi.getMessage());
 		}
 	}
 
@@ -118,7 +152,8 @@ public class TrackWatcher {
 					try {
 						sendTrackError(ex, message);
 					} catch (Exception exi) {
-						System.out.println(getClass().toString() + ", processTrack(), " + "notification, " + exi.getMessage() + ", " + message);
+						System.out.println(getClass().toString() + ", processTrack(), " + "notification, "
+								+ exi.getMessage() + ", " + message);
 					}
 				}
 			}
@@ -126,7 +161,8 @@ public class TrackWatcher {
 			try {
 				sendTrackError(ex, message);
 			} catch (Exception exi) {
-				System.out.println(getClass().toString() + ", processTrack(), " + "parsing, " + exi.getMessage() + ", " + message);
+				System.out.println(
+						getClass().toString() + ", processTrack(), " + "parsing, " + exi.getMessage() + ", " + message);
 			}
 		}
 	}
@@ -176,11 +212,11 @@ public class TrackWatcher {
 	public int getLatencyPurgeDays() {
 		return latencyPurgeDays;
 	}
-	
+
 	public String getStatusPath() {
 		return statusPath;
 	}
-	
+
 	public List<ITrackListener> getListeners() {
 		return listeners;
 	}
@@ -196,7 +232,7 @@ public class TrackWatcher {
 	public void clearListeners() {
 		listeners.clear();
 	}
-	
+
 	public ConcurrentHashMap<Integer, TrackStatus> getTrackStatus() {
 		return trackStatus;
 	}
@@ -216,16 +252,17 @@ public class TrackWatcher {
 			trackStatus.put(status.getMmsi(), status);
 		}
 	}
-	
+
 	public ArrayList<String> getTrackPicture() {
 		ArrayList<String> result = new ArrayList<String>();
-		
-		for(int mmsi : trackStatus.keySet()) {
+
+		for (int mmsi : trackStatus.keySet()) {
 			try {
 				result.add((trackStatus.get(mmsi)).toJSONArray());
-			} catch (Exception exi) {}
+			} catch (Exception exi) {
+			}
 		}
-		
+
 		return result;
 	}
 
@@ -237,7 +274,7 @@ public class TrackWatcher {
 	private Object lockSearch = new Object();
 	public static SimpleModule objectModule = new SimpleModule();
 	public static ObjectMapper objectMapper = new ObjectMapper();
-	
+
 	private List<ITrackListener> listeners = new ArrayList<>();
 
 	private ConcurrentHashMap<Integer, TrackStatus> trackStatus = new ConcurrentHashMap<Integer, TrackStatus>();
