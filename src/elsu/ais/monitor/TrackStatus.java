@@ -173,7 +173,7 @@ public class TrackStatus extends TrackStatusBase implements Cloneable {
 			synchronized (status) {
 				status.addPositionHistory(status);
 				status.fromT9StandardSARPositionReport(message);
-				
+
 				watcher.updateTrackStatus(status);
 				status = (TrackStatus) status.clone();
 			}
@@ -191,10 +191,10 @@ public class TrackStatus extends TrackStatusBase implements Cloneable {
 	@Override
 	public String toString() {
 		String result = "";
-		
+		ObjectNode node = TrackWatcher.objectMapper.createObjectNode();
+
 		try {
 			// result = SentenceBase.objectMapper.writeValueAsString(this);
-			ObjectNode node = TrackWatcher.objectMapper.createObjectNode();
 
 			node.put("transponder", getTransponderType()); // 0
 			node.put("type", getType()); // 1
@@ -215,7 +215,8 @@ public class TrackStatus extends TrackStatusBase implements Cloneable {
 			node.put("maneuverText", AISLookupValues.getManeuverIndicator(getManeuver())); // 16
 			node.put("raim", isRaim()); // 17
 			node.put("radio", getRadio()); // 18
-			node.set("commState", TrackWatcher.objectMapper.readTree(((getCommState() != null) ? getCommState().toString() : ""))); // 19
+			node.set("commState",
+					TrackWatcher.objectMapper.readTree(((getCommState() != null) ? getCommState().toString() : ""))); // 19
 			node.put("commtech", AISLookupValues.getCommunicationTechnology(getType())); // 20
 			node.put("aisVersion", getAisVersion()); // 21
 			node.put("imo", getImo()); // 22
@@ -223,7 +224,8 @@ public class TrackStatus extends TrackStatusBase implements Cloneable {
 			node.put("shipName", getShipName().trim()); // 24
 			node.put("shipType", getShipType()); // 25
 			node.put("shipTypeText", AISLookupValues.getShipType(getShipType())); // 26
-			node.set("dimension", SentenceBase.objectMapper.readTree(((getDimension() != null) ? getDimension().toString() : ""))); // 27
+			node.set("dimension",
+					SentenceBase.objectMapper.readTree(((getDimension() != null) ? getDimension().toString() : ""))); // 27
 			node.put("epfd", getEpfd()); // 28
 			node.put("epfdText", AISLookupValues.getEPFDFixType(getEpfd())); // 29
 			node.put("month", getMonth()); // 30
@@ -245,25 +247,28 @@ public class TrackStatus extends TrackStatusBase implements Cloneable {
 			node.put("commFlag", getCommFlag()); // 46
 			node.put("commFlagText", AISLookupValues.getCommunicationFlag(getCommFlag())); // 47
 			node.set("positionHistory", SentenceBase.objectMapper.readTree(getPositionHistoryAsString())); // 48
-			node.put("createTime", SentenceBase.formatEPOCHToUTC((int)(getCreateTime().getMillis() / 1000))); // 49
+			node.put("createTime", SentenceBase.formatEPOCHToUTC((int) (getCreateTime().getMillis() / 1000))); // 49
 			node.put("updateCounter", getUpdateCounter()); // 50
 			node.put("period", ISOPeriodFormat.standard().print(getPeriod())); // 51
-			
+			node.put("updateTime", SentenceBase.formatEPOCHToUTC((int) (getUpdateTime().getMillis() / 1000))); // 52
+
 			result = TrackWatcher.objectMapper.writeValueAsString(node);
-			node = null;
 		} catch (Exception exi) {
-			result = "error, Sentence, " + exi.getMessage();
+			System.out.println(getClass().getName() + ", toString(), error, Sentence, " + exi.getMessage() + ", "
+					+ toString_Debug());
+			result = "";
 		}
-		
+
+		node = null;
 		return result;
 	}
 
 	public String toJSONArray() {
 		String result = "";
-		
+		ArrayNode node = TrackWatcher.objectMapper.createArrayNode();
+
 		try {
 			// result = SentenceBase.objectMapper.writeValueAsString(this);
-			ArrayNode node = TrackWatcher.objectMapper.createArrayNode();
 
 			node.add(getTransponderType()); // 0
 			node.add(getType()); // 1
@@ -314,16 +319,86 @@ public class TrackStatus extends TrackStatusBase implements Cloneable {
 			node.add(getCommFlag()); // 46
 			node.add(AISLookupValues.getCommunicationFlag(getCommFlag())); // 47
 			node.add(SentenceBase.objectMapper.readTree(getPositionHistoryAsString())); // 48
-			node.add(SentenceBase.formatEPOCHToUTC((int)(getCreateTime().getMillis() / 1000))); // 49
+			node.add(SentenceBase.formatEPOCHToUTC((int) (getCreateTime().getMillis() / 1000))); // 49
 			node.add(getUpdateCounter()); // 50
 			node.add(ISOPeriodFormat.standard().print(getPeriod())); // 51
-			
+			node.add(SentenceBase.formatEPOCHToUTC((int) (getUpdateTime().getMillis() / 1000))); // 52
+
 			result = TrackWatcher.objectMapper.writeValueAsString(node);
-			node = null;
 		} catch (Exception exi) {
-			result = "error, Sentence, " + exi.getMessage();
+			System.out.println(getClass().getName() + ", toJSONArray(), error, Sentence, " + exi.getMessage() + ", "
+					+ toString_Debug());
+			result = "";
 		}
-		
+
+		node = null;
 		return result;
+	}
+
+	public String toString_Debug() {
+		StringBuilder result = new StringBuilder();
+
+		try {
+			// result = SentenceBase.objectMapper.writeValueAsString(this);
+			result.append("transponder=" + getTransponderType()); // 0
+			result.append(",type=" + getType()); // 1
+			result.append(",typeText=" + AISLookupValues.getMessageType(getType())); // 2
+			result.append(",repeat=" + getRepeat()); // 3
+			result.append(",mmsi=" + getMmsi()); // 4
+			result.append(",status=" + getStatus()); // 5
+			result.append(",statusText=" + AISLookupValues.getNavigationStatus(getStatus())); // 6
+			result.append(",rateOfTurn=" + getRateOfTurn()); // 7
+			result.append(",speed=" + getSpeed()); // 8
+			result.append(",accuracy=" + isAccuracy()); // 9
+			result.append(",longitude=" + getLongitude()); // 10
+			result.append(",latitude=" + getLatitude()); // 11
+			result.append(",course=" + getCourse()); // 12
+			result.append(",heading=" + getHeading()); // 13
+			result.append(",second=" + getSecond()); // 14
+			result.append(",maneuver=" + getManeuver()); // 15
+			result.append(",maneuverText=" + AISLookupValues.getManeuverIndicator(getManeuver())); // 16
+			result.append(",raim=" + isRaim()); // 17
+			result.append(",radio=" + getRadio()); // 18
+			result.append(",commState="
+					+ TrackWatcher.objectMapper.readTree(((getCommState() != null) ? getCommState().toString() : ""))); // 19
+			result.append(",commtech=" + AISLookupValues.getCommunicationTechnology(getType())); // 20
+			result.append(",aisVersion=" + getAisVersion()); // 21
+			result.append(",imo=" + getImo()); // 22
+			result.append(",callSign=" + getCallSign().trim()); // 23
+			result.append(",shipName=" + getShipName().trim()); // 24
+			result.append(",shipType=" + getShipType()); // 25
+			result.append(",shipTypeText=" + AISLookupValues.getShipType(getShipType())); // 26
+			result.append(",dimension="
+					+ SentenceBase.objectMapper.readTree(((getDimension() != null) ? getDimension().toString() : ""))); // 27
+			result.append(",epfd=" + getEpfd()); // 28
+			result.append(",epfdText=" + AISLookupValues.getEPFDFixType(getEpfd())); // 29
+			result.append(",month=" + getMonth()); // 30
+			result.append(",hour=" + getHour()); // 31
+			result.append(",day=" + getDay()); // 32
+			result.append(",minute=" + getMinute()); // 33
+			result.append(",draught=" + getDraught()); // 34
+			result.append(",destination=" + getDestination().trim()); // 35
+			result.append(",dte=" + getDte()); // 36
+			result.append(",dteText=" + AISLookupValues.getDte(getDte())); // 37
+			result.append(",assignedMode=" + getAssignedMode()); // 38
+			result.append(",regional=" + getRegional()); // 39
+			result.append(",cs=" + isCs()); // 40
+			result.append(",display=" + isDisplay()); // 41
+			result.append(",dsc=" + isDsc()); // 42
+			result.append(",band=" + isBand()); // 43
+			result.append(",msg22=" + isMsg22()); // 44
+			result.append(",assigned=" + isAssigned()); // 45
+			result.append(",commFlag=" + getCommFlag()); // 46
+			result.append(",commFlagText=" + AISLookupValues.getCommunicationFlag(getCommFlag())); // 47
+			result.append(",positionHistory=" + SentenceBase.objectMapper.readTree(getPositionHistoryAsString())); // 48
+			result.append(",createTime=" + SentenceBase.formatEPOCHToUTC((int) (getCreateTime().getMillis() / 1000))); // 49
+			result.append(",updateCounter=" + getUpdateCounter()); // 50
+			result.append(",period=" + ISOPeriodFormat.standard().print(getPeriod())); // 51
+			result.append(",updateTime=" + SentenceBase.formatEPOCHToUTC((int) (getUpdateTime().getMillis() / 1000))); // 52
+		} catch (Exception exi) {
+			System.out.println(getClass().getName() + ", toString_Debug(), error, Sentence, " + exi.getMessage());
+		}
+
+		return result.toString();
 	}
 }

@@ -1,13 +1,13 @@
 package elsu.ais.application;
 
 import java.util.ArrayList;
-import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 
 import elsu.common.CollectionUtils;
 import elsu.sentence.SentenceFactory;
 
 public class AISParserWorker implements Runnable {
-	public AISParserWorker(String name, ConcurrentLinkedQueue<ArrayList<String>> messageQueue) {
+	public AISParserWorker(String name, LinkedBlockingQueue<ArrayList<String>> messageQueue) {
 		setName(name);
 		this.messageQueue = messageQueue;
 	}
@@ -30,11 +30,7 @@ public class AISParserWorker implements Runnable {
 		while (!Thread.currentThread().isInterrupted())
 		{
 			try {
-				synchronized(messageQueue) {
-					try {
-						messages = this.messageQueue.poll();
-					} catch (Exception exi) {}
-				}
+				messages = this.messageQueue.take();
 				
 				if (messages != null) {
 					getSentenceFactory().parseSentence(messages);
@@ -48,6 +44,6 @@ public class AISParserWorker implements Runnable {
 	}
 
 	private String name = "";
-	private ConcurrentLinkedQueue<ArrayList<String>> messageQueue = null;
+	private LinkedBlockingQueue<ArrayList<String>> messageQueue = null;
 	private SentenceFactory sentenceFactory = new SentenceFactory();
 }

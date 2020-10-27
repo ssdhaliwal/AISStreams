@@ -608,68 +608,86 @@ public abstract class TrackStatusBase {
 
 	public String getPositionHistoryAsString() {
 		String result = "";
-		
-		try {
-			// result = SentenceBase.objectMapper.writeValueAsString(this);
-			ArrayNode node = TrackWatcher.objectMapper.createArrayNode();
 
-			for(TrackStatusPosition trackPosition : getPostitionHistory()) {
-				node.add(SentenceBase.objectMapper.readTree(trackPosition.toString()));
+		try {
+			if (getPostitionHistory() != null) {
+				// result = SentenceBase.objectMapper.writeValueAsString(this);
+				ArrayNode node = TrackWatcher.objectMapper.createArrayNode();
+
+				synchronized(positionHistory) {
+					for (TrackStatusPosition trackPosition : getPostitionHistory()) {
+						if (trackPosition != null) {
+							node.add(SentenceBase.objectMapper.readTree(trackPosition.toString()));
+						}
+					}
+				}
+
+				result = TrackWatcher.objectMapper.writeValueAsString(node);
+				node = null;
 			}
-			
-			result = TrackWatcher.objectMapper.writeValueAsString(node);
-			node = null;
 		} catch (Exception exi) {
-			result = "error, Sentence, " + exi.getMessage();
+			System.out.println(
+					getClass().getName() + ", getPositionHistoryAsString(), error, Sentence, " + exi.getMessage());
+			result = "";
 		}
-		
+
 		return result;
 	}
 
 	public String getPositionHistoryAsJSONArray() {
 		String result = "";
-		
+
 		try {
 			// result = SentenceBase.objectMapper.writeValueAsString(this);
 			ArrayNode node = TrackWatcher.objectMapper.createArrayNode();
 
-			for(TrackStatusPosition trackPosition : getPostitionHistory()) {
-				node.add(SentenceBase.objectMapper.readTree(trackPosition.toJSONArray()));
+			synchronized(positionHistory) {
+				for (TrackStatusPosition trackPosition : getPostitionHistory()) {
+					if (trackPosition != null) {
+						node.add(SentenceBase.objectMapper.readTree(trackPosition.toJSONArray()));
+					}
+				}
 			}
-			
+
 			result = TrackWatcher.objectMapper.writeValueAsString(node);
 			node = null;
 		} catch (Exception exi) {
-			result = "error, Sentence, " + exi.getMessage();
+			System.out.println(
+					getClass().getName() + ", getPositionHistoryAsJSONArray(), error, Sentence, " + exi.getMessage());
+			result = "";
 		}
-		
+
 		return result;
 	}
-	
+
 	public void addPositionHistory(TrackStatus status) {
-		if (this.positionHistory.size() > 10) {
-			this.positionHistory.remove(0);
+		synchronized(positionHistory) {
+			if (this.positionHistory.size() > 10) {
+				this.positionHistory.remove(0);
+			}
+	
+			this.positionHistory.add(TrackStatusPosition.fromTrackStatus(status));
 		}
-		
-		this.positionHistory.add(TrackStatusPosition.fromTrackStatus(status));
 	}
-	
+
 	public void clearPositionHistory() {
-		positionHistory.clear();
+		synchronized(positionHistory) {
+			positionHistory.clear();
+		}
 	}
-	
+
 	public int getUpdateCounter() {
 		return updateCounter;
 	}
-	
+
 	public void incUpdateCounter() {
 		this.updateCounter++;
 	}
-	
+
 	public void resetUpdateCounter() {
 		this.updateCounter = 0;
 	}
-	
+
 	public boolean isUpdated() {
 		return updated;
 	}
@@ -689,9 +707,10 @@ public abstract class TrackStatusBase {
 	public Instant getCreateTime() {
 		return createTime;
 	}
-	
+
 	public void setCreateTime(Instant time) {
 		this.createTime = time;
+		setUpdateTime(this.createTime);
 	}
 
 	public void setCreateTime() {
@@ -710,11 +729,11 @@ public abstract class TrackStatusBase {
 	public void setUpdateTime() {
 		this.updateTime = Instant.now();
 	}
-	
+
 	public MutablePeriod getPeriod() {
 		return period;
 	}
-	
+
 	public void setPeriod() {
 		incUpdateCounter();
 		setUpdateTime();
@@ -773,7 +792,7 @@ public abstract class TrackStatusBase {
 	private boolean updated = false;
 	private boolean removed = false;
 	private Instant createTime = Instant.now();
-	private Instant updateTime = createTime;
-	
+	private Instant updateTime = Instant.now();
+
 	private MutablePeriod period = new MutablePeriod();
 }

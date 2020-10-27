@@ -16,7 +16,7 @@ public class TrackQueuePurge extends Thread {
 	private TrackWatcher watcher = null;
 	private List<ITrackListener> listeners = null;
 	private ConcurrentHashMap<Integer, TrackStatus> trackStatus = null;
-	private int latencyCleanupSpan = 5;
+	private int latencyPurgeSpan = 15;
 	private int latencyCleanupTime = 60000;
 	private int latencyPurgeDays = 5; 
 
@@ -24,7 +24,7 @@ public class TrackQueuePurge extends Thread {
 		this.watcher = watcher;
 		this.trackStatus = watcher.getTrackStatus();
 		this.listeners = watcher.getListeners();
-		this.latencyCleanupSpan = watcher.getLatencyCleanupSpan();
+		this.latencyPurgeSpan = watcher.getLatencyPurgeSpan();
 		this.latencyCleanupTime = watcher.getLatencyCleanupTime();
 		this.latencyPurgeDays = watcher.getLatencyPurgeDays(); 
 	}
@@ -47,7 +47,7 @@ public class TrackQueuePurge extends Thread {
 			ArrayList<TrackStatus> tracks = new ArrayList<TrackStatus>();
 
 			while (!isInterrupted()) {
-				Thread.sleep(latencyCleanupSpan * latencyCleanupTime);
+				Thread.sleep(latencyPurgeSpan * latencyCleanupTime);
 				
 				int purged = 0;
 				TrackStatus status = null;
@@ -62,12 +62,10 @@ public class TrackQueuePurge extends Thread {
 							status = trackStatus.get(mmsi);
 							
 							if (status != null) {
-								if (status.getUpdateCounter() == 0) {
-									if (Days.daysBetween(status.getUpdateTime(), Instant.now()).getDays() >= latencyPurgeDays) {
-										tracks.add(trackStatus.remove(mmsi));
-		
-										purged++;
-									}
+								if (Days.daysBetween(status.getUpdateTime(), Instant.now()).getDays() >= latencyPurgeDays) {
+									tracks.add(trackStatus.remove(mmsi));
+	
+									purged++;
 								}
 							}
 						} catch (Exception ex) {

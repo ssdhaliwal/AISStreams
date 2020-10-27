@@ -36,17 +36,26 @@ public class StreamNetworkConnector extends ConnectorBase {
 	private boolean isRunning = false;
 	private boolean isMonitorRunning = false;
 	private long recordCounter = 0L;
+	private long lifetimeCounter = 0L;
 	private long monitorRecordCounter = 0L;
 	private long systemGCCounter = 0L;
 	private Socket clientSocket = null;
 	private String fileMask = "";
 	private volatile FileChannelTextWriter messageWriter = null;
 	
+	private int max_threads = 10;
+	
 	public StreamNetworkConnector(ConfigLoader config, String connName,
 			String host, int port, String name, String id) throws Exception {
 		super();
 		
 		// load the config params else override from constructor
+		max_threads = 10;
+		max_threads = Integer.parseInt(config.getProperty("application.services.key.processing.threads").toString());
+		
+		// initialize the threadpool from bass class
+		initializeThreadPool(max_threads);
+		
 		if (connName != null) {
 			hostUri = config.getProperty("application.services.service." + connName + ".attributes.key.site.host").toString();
 			hostPort = Integer.parseInt(config.getProperty("application.services.service." + connName + ".attributes.key.site.port").toString());
@@ -104,6 +113,8 @@ public class StreamNetworkConnector extends ConnectorBase {
 	}
 
 	public void sendMessage(ArrayList<String> messages) throws Exception {
+		recordCounter++;
+
 		messageWriter.write(messages + GlobalStack.LINESEPARATOR);
 		super.sendMessage(messages);
 	}
@@ -210,54 +221,58 @@ public class StreamNetworkConnector extends ConnectorBase {
 							// read line from the socket stream
 							line = in.readLine();
 
-							// increment record trackers
-							recordCounter++;
-							monitorRecordCounter++;
-							
-							// process the message and fire the events
-							try {
-								if (positionReportsOnly) {
-									if (line.matches("(?s).*!..VD[OM].*")) {
-										hMatch = SentenceBase.messageVDOPattern.matcher(line);
-										while (hMatch.find()) {
-											sentence = hMatch.group(0);
-											
-											// if complete message
-											message = sentence.split(",");
-											if (message[1].equals(message[2])) {
-												messages.add(sentence);
+							if ((line != null) && (!line.isEmpty())) {
+								// increment record trackers
+								lifetimeCounter++;
+								monitorRecordCounter++;
+								
+								// process the message and fire the events
+								try {
+									if (positionReportsOnly) {
+										if (line.matches("(?s).*!..VD[OM].*")) {
+											hMatch = SentenceBase.messageVDOPattern.matcher(line);
+											while (hMatch.find()) {
+												sentence = hMatch.group(0);
+												
+												// if complete message
+												message = sentence.split(",");
+												if (message[1].equals(message[2])) {
+													messages.add(sentence);
 
-												if (messages.size() == Integer.valueOf(message[1])) {
-													sendMessage(messages);
-													messages = new ArrayList<String>();
-												} else {
-													sendError("partial fragment, pending queue cleared, [" + 
-															CollectionUtils.ArrayListToString(messages) + "]");
-													messages = new ArrayList<String>();
+													if (messages.size() == Integer.valueOf(message[1])) {
+														sendMessage(messages);
+														messages = new ArrayList<String>();
+													} else {
+														sendError("partial fragment, pending queue cleared, [" + 
+																CollectionUtils.ArrayListToString(messages) + "]");
+														messages = new ArrayList<String>();
+													}
+												} else if (Integer.valueOf(message[2]) == 1) {
+													if (messages.size() > 0) {
+														sendError("partial fragment, pending queue cleared, [" + 
+																CollectionUtils.ArrayListToString(messages) + "]");
+														messages = new ArrayList<String>();
+													}
+													messages.add(sentence);
 												}
-											} else if (Integer.valueOf(message[2]) == 1) {
-												if (messages.size() > 0) {
-													sendError("partial fragment, pending queue cleared, [" + 
-															CollectionUtils.ArrayListToString(messages) + "]");
-													messages = new ArrayList<String>();
-												}
-												messages.add(sentence);
 											}
 										}
+									} else {
+										sendMessage(line);
 									}
-								} else {
-									sendMessage(line);
-								}
-								
-								systemGCCounter++;
-								if (systemGCCounter == 50000) {
-									systemGCCounter = 0;
-									System.gc();
-								}
+									
+									systemGCCounter++;
+									if (systemGCCounter >= 50000) {
+										systemGCCounter = 0;
+										System.gc();
+										
+										System.out.println(">> queue count / " + getMessageQueue().size() + " of " + recordCounter + " (" + lifetimeCounter + ") <<");
+									}
 
-								Thread.yield();
-							} catch (Exception exi) {
-								sendError("client collector error, sending message, (" + line + "), " + exi.getMessage());
+									Thread.yield();
+								} catch (Exception exi) {
+									sendError("client collector error, sending message, (" + line + "), " + exi.getMessage());
+								}
 							}
 							
 							line = null;

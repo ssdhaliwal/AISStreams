@@ -40,6 +40,13 @@ public class TrackWatcher {
 		}
 
 		try {
+			latencyPurgeSpan = Integer
+					.parseInt(config.getProperty("application.services.key.latency.purge.span").toString());
+		} catch (Exception ex) {
+			latencyPurgeSpan = 15;
+		}
+
+		try {
 			latencyPurgeDays = Integer
 					.parseInt(config.getProperty("application.services.key.latency.purge.days").toString());
 		} catch (Exception ex) {
@@ -213,6 +220,10 @@ public class TrackWatcher {
 		return latencyCleanupSpan;
 	}
 
+	public int getLatencyPurgeSpan() {
+		return latencyPurgeSpan;
+	}
+
 	public int getLatencyPurgeDays() {
 		return latencyPurgeDays;
 	}
@@ -272,6 +283,7 @@ public class TrackWatcher {
 
 	private int latencyCleanupSpan = 5;
 	private int latencyCleanupTime = 60000;
+	private int latencyPurgeSpan = 60;
 	private int latencyPurgeDays = 5;
 	private String statusPath = System.getProperty("user.dir") + "/config/status";
 

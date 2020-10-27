@@ -47,7 +47,8 @@ public class TrackStatusPosition {
 			result = TrackWatcher.objectMapper.writeValueAsString(node);
 			node = null;
 		} catch (Exception exi) {
-			result = "error, Sentence, " + exi.getMessage();
+			System.out.println(getClass().getName() + ", toString(), error, Sentence, " + exi.getMessage());
+			result = "";
 		}
 		
 		return result;
@@ -70,7 +71,8 @@ public class TrackStatusPosition {
 			result = SentenceBase.objectMapper.writeValueAsString(node);
 			node = null;
 		} catch (Exception exi) {
-			result = "error, Sentence, " + exi.getMessage();
+			System.out.println(getClass().getName() + ", toJSONArray(), error, Sentence, " + exi.getMessage());
+			result = "";
 		}
 		
 		return result;
