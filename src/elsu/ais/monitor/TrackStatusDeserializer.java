@@ -80,9 +80,11 @@ public class TrackStatusDeserializer extends JsonDeserializer<TrackStatus> {
 
 		//node.set("positionHistory", SentenceBase.objectMapper.readTree(getPositionHistoryAsString())); // 48
 		status.setCreateTime(Instant.parse(node.get("createTime").asText().replace(" UTC", "Z").replace(" ", "T")));
-		//node.put("createTime", SentenceBase.formatEPOCHToUTC((int)(getCreateTime().getMillis() / 1000))); // 49
-		//node.put("updateCounter", getUpdateCounter()); // 50
-		//node.put("period", ISOPeriodFormat.standard().print(getPeriod())); // 51
+		status.setUpdateCounter(node.get("updateCounter").asInt());
+		try {
+			status.setUpdateTime(Instant.parse(node.get("updateTime").asText().replace(" UTC", "Z").replace(" ", "T")));
+			status.calculatePeriod();
+		} catch (Exception exi) {}
 
 		return status;
 	}

@@ -688,6 +688,10 @@ public abstract class TrackStatusBase {
 		this.updateCounter = 0;
 	}
 
+	public void setUpdateCounter(int counter) {
+		this.updateCounter = counter;
+	}
+
 	public boolean isUpdated() {
 		return updated;
 	}
@@ -710,19 +714,17 @@ public abstract class TrackStatusBase {
 
 	public void setCreateTime(Instant time) {
 		this.createTime = time;
-		setUpdateTime(this.createTime);
 	}
 
 	public void setCreateTime() {
 		this.createTime = Instant.now();
-		setUpdateTime(this.createTime);
 	}
 
 	public Instant getUpdateTime() {
 		return updateTime;
 	}
 
-	private void setUpdateTime(Instant time) {
+	public void setUpdateTime(Instant time) {
 		this.updateTime = time;
 	}
 
@@ -737,6 +739,10 @@ public abstract class TrackStatusBase {
 	public void setPeriod() {
 		incUpdateCounter();
 		setUpdateTime();
+		this.period.setPeriod(getCreateTime(), getUpdateTime());
+	}
+
+	public void calculatePeriod() {
 		this.period.setPeriod(getCreateTime(), getUpdateTime());
 	}
 

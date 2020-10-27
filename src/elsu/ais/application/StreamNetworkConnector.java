@@ -154,18 +154,14 @@ public class StreamNetworkConnector extends ConnectorBase {
 						public void run() {
 							isMonitorRunning = true;
 							
-							try {
-								System.out.println("client monitor started...");
-							} catch (Exception ex2) {
-								System.out.println(getClass().toString() + ", run(), " + "network monitor, " + ex2.getMessage());
-							}
-
+							System.out.println("client monitor started...");
 							while (isRunning && isMonitorRunning && !isShutdown) {
 								try {
 									// yield processing to other threads
 									// for specified
 									// time, any exceptions are ignored
 									try {
+										monitorRecordCounter = 0L;
 										Thread.sleep(noDataTimeout);
 									} catch (Exception exi) {
 									}
@@ -193,6 +189,7 @@ public class StreamNetworkConnector extends ConnectorBase {
 								}
 							}
 							
+							System.out.println("client monitor stopped...");
 							isMonitorRunning = false;
 						}
 					});
