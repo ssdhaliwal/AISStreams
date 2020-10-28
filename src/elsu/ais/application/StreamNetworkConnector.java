@@ -38,7 +38,6 @@ public class StreamNetworkConnector extends ConnectorBase {
 	private long recordCounter = 0L;
 	private long lifetimeCounter = 0L;
 	private long monitorRecordCounter = 0L;
-	private long systemGCCounter = 0L;
 	private Socket clientSocket = null;
 	private String fileMask = "";
 	private volatile FileChannelTextWriter messageWriter = null;
@@ -210,7 +209,7 @@ public class StreamNetworkConnector extends ConnectorBase {
 					String line = null, sentence = "", message[] = null;
 					ArrayList<String> messages = new ArrayList<String>();
 					Matcher hMatch = null;
-					systemGCCounter = 0L;
+					int systemGCCounter = 0;
 					try (BufferedReader in = new BufferedReader(
 							  new InputStreamReader(clientSocket.getInputStream(), StandardCharsets.UTF_8))) {
 						
