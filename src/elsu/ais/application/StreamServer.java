@@ -10,26 +10,55 @@ import org.java_websocket.server.WebSocketServer;
 
 import elsu.support.ConfigLoader;
 import elsu.base.IAISEventListener;
+import elsu.parser.connector.ConnectorBase;
+import elsu.parser.connector.StreamFileConnector;
+import elsu.parser.connector.StreamSocketConnector;
 import elsu.sentence.Sentence;
-import elsu.ais.application.StreamNetworkConnector;
+import elsu.sentence.SentenceBase;
 import elsu.ais.monitor.TrackWatcher;
 import elsu.ais.resources.ITrackListener;
 
 public class StreamServer extends WebSocketServer implements IAISEventListener, ITrackListener {
-	public StreamServer(InetSocketAddress address, ConfigLoader config, Object tracker,
+	public StreamServer(InetSocketAddress address, ConfigLoader config, 
 			ArrayList<ConnectorBase> connectors, TrackWatcher watcher) {
 		super(address);
 		
+		initialize(config, connectors, watcher);
+	}
+	
+	private void initialize(ConfigLoader config, ArrayList<ConnectorBase> connectors, TrackWatcher watcher) {
 		setConnectionLostTimeout(0);
 
-		this.config = config;
 		this.connectors = connectors;
 		this.watcher = watcher;
 
 		// pull debug config info
 		String webSocketDebug = config.getProperty("application.services.key.websocket.debug").toString();
 		if (webSocketDebug.equals("true")) {
-			this.debug = true;
+			StreamServer.isDebug = true;
+		}
+
+		try {
+			String debugLevel = config.getProperty("application.services.key.processing.debug").toString();
+			if (debugLevel.equals("debug")) {
+				SentenceBase.logLevel = 6;
+			} else if (debugLevel.equals("all")) {
+				SentenceBase.logLevel = 6;
+			} else if (debugLevel.equals("debug")) {
+				SentenceBase.logLevel = 5;
+			} else if (debugLevel.equals("info")) {
+				SentenceBase.logLevel = 4;
+			} else if (debugLevel.equals("warn")) {
+				SentenceBase.logLevel = 3;
+			} else if (debugLevel.equals("error")) {
+				SentenceBase.logLevel = 2;
+			} else if (debugLevel.equals("fatal")) {
+				SentenceBase.logLevel = 1;
+			} else if (debugLevel.equals("off")) {
+				SentenceBase.logLevel = 0;
+			}
+		} catch (Exception exi) {
+			System.out.println(getClass().getName() + ", initialize(), null, config item application.services.key.processing.debug not defined, debugLeve set to all");
 		}
 
 		// connect all monitors to the tracker
@@ -111,7 +140,7 @@ public class StreamServer extends WebSocketServer implements IAISEventListener, 
 
 	@Override
 	public synchronized void onTrackRemove(String status) {
-		if (this.debug) {
+		if (StreamServer.isDebug) {
 			System.out.println("track remove; " + status);
 		}
 		
@@ -120,7 +149,7 @@ public class StreamServer extends WebSocketServer implements IAISEventListener, 
 
 	@Override
 	public synchronized void onTrackAdd(String status) {
-		if (this.debug) {
+		if (StreamServer.isDebug) {
 			System.out.println("track add; " + status);
 		}
 		
@@ -129,7 +158,7 @@ public class StreamServer extends WebSocketServer implements IAISEventListener, 
 
 	@Override
 	public synchronized void onTrackUpdate(String status) {
-		if (this.debug) {
+		if (StreamServer.isDebug) {
 			System.out.println("track update; " + status);
 		}
 		
@@ -150,45 +179,17 @@ public class StreamServer extends WebSocketServer implements IAISEventListener, 
 			 * " - " + properties.get(key)); }
 			 */
 
-			// check if args passed
-			String host = "", name = "", id = "";
-			int port = 0, speed = 0;
-			if ((args.length > 0) && (args.length == 4)) {
-				host = args[0];
-				port = Integer.valueOf(args[1]);
-				name = args[2];
-				id = args[3];
-
-				connector = new StreamNetworkConnector(config, null, host, port, name, id);
-				connector.start();
-
-				connectors.add(connector);
-			} else if ((args.length > 0) && (args.length == 2)) {
-				host = args[0];
-				speed = Integer.valueOf(args[1]);
-
-				connector = new StreamFileConnector(config, null, host, speed);
-				connector.start();
-
-				connectors.add(connector);
-			} else if (args.length > 0) {
-				throw new Exception("invalid arguments: \n\njava -jar ./AISStreamServer.jar host%s port%i name%s id%s\n(or)\njava -jar ./AISStreamServer.jar file_full_path%s speed_ms%i");
-			}
-
-			// if host is empty; then connect to default config
-			if (host == "") {
-				String connectionList = config.getProperty("application.services.activeList").toString();
-				String[] connections = connectionList.split(",");
-				for (String connection : connections) {
-					if (config.getProperty("application.services.service." + connection + ".attributes.key.type").toString().equals("file")) {
-						connector = new StreamFileConnector(config, connection, "", 0);
-					} else {
-						connector = new StreamNetworkConnector(config, connection, "", 0, "", "");
-					}
-					
-					connector.start();
-					connectors.add(connector);
+			String connectionList = config.getProperty("application.services.activeList").toString();
+			String[] connections = connectionList.split(",");
+			for (String connection : connections) {
+				if (config.getProperty("application.services.service." + connection + ".attributes.key.type").toString().equals("file")) {
+					connector = new StreamFileConnector(config, connection, "", 0);
+				} else {
+					connector = new StreamSocketConnector(config, connection, "", 0, "", "");
 				}
+				
+				connector.start();
+				connectors.add(connector);
 			}
 
 			// start the track monitor
@@ -200,7 +201,7 @@ public class StreamServer extends WebSocketServer implements IAISEventListener, 
 					.parseInt(config.getProperty("application.services.key.websocket.port").toString());
 
 			WebSocketServer server = new StreamServer(new InetSocketAddress(_websocketHostUri, _websocketHostPort),
-					config, null, connectors, watcher);
+					config, connectors, watcher);
 			server.run();
 
 			// StreamServer server = new StreamServer(null, config, null, connectors, null);
@@ -209,8 +210,7 @@ public class StreamServer extends WebSocketServer implements IAISEventListener, 
 		}
 	}
 
-	public static boolean debug = false;
+	public static boolean isDebug = false;
 	private TrackWatcher watcher = null;
 	private ArrayList<ConnectorBase> connectors = new ArrayList<>();
-	private ConfigLoader config = null;
 }
