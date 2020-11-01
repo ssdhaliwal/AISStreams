@@ -1,4 +1,2 @@
-# AISStreams
-Stream processor for AIS base station
-
-- in work - not production ready -
+Review WIKI for more information....
+[AISStreams WIKI](https://github.com/ssdhaliwal/AISStreams/wiki)
