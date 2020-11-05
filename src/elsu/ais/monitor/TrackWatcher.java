@@ -178,7 +178,7 @@ public class TrackWatcher {
 		}
 	}
 
-	public TrackStatus isActive(int mmsi) {
+	public synchronized TrackStatus isActive(int mmsi) {
 		return getTrackStatus(mmsi);
 	}
 
@@ -252,20 +252,15 @@ public class TrackWatcher {
 		return trackStatus;
 	}
 
-	public TrackStatus getTrackStatus(int key) {
+	public synchronized TrackStatus getTrackStatus(int key) {
 		TrackStatus status = null;
 
-		synchronized (lockSearch) {
-			status = trackStatus.get(key);
-		}
-
+		status = trackStatus.get(key);
 		return status;
 	}
 
-	public void updateTrackStatus(TrackStatus status) {
-		synchronized (lockSearch) {
-			trackStatus.put(status.getMmsi(), status);
-		}
+	public synchronized void updateTrackStatus(TrackStatus status) {
+		trackStatus.put(status.getMmsi(), status);
 	}
 
 	public ArrayList<String> getTrackPicture() {
@@ -287,7 +282,6 @@ public class TrackWatcher {
 	private int latencyPurgeDays = 5;
 	private String statusPath = System.getProperty("user.dir") + "/config/status";
 
-	private Object lockSearch = new Object();
 	public static SimpleModule objectModule = new SimpleModule();
 	public static ObjectMapper objectMapper = new ObjectMapper();
 

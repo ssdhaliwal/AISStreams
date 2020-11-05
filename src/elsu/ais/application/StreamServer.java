@@ -140,7 +140,7 @@ public class StreamServer extends WebSocketServer implements IAISEventListener, 
 
 	@Override
 	public synchronized void onTrackRemove(String status) {
-		if (StreamServer.isDebug) {
+		if (SentenceBase.logLevel >= 4) {
 			System.out.println("track remove; " + status);
 		}
 		
@@ -149,7 +149,7 @@ public class StreamServer extends WebSocketServer implements IAISEventListener, 
 
 	@Override
 	public synchronized void onTrackAdd(String status) {
-		if (StreamServer.isDebug) {
+		if (SentenceBase.logLevel >= 4) {
 			System.out.println("track add; " + status);
 		}
 		
@@ -158,7 +158,7 @@ public class StreamServer extends WebSocketServer implements IAISEventListener, 
 
 	@Override
 	public synchronized void onTrackUpdate(String status) {
-		if (StreamServer.isDebug) {
+		if (SentenceBase.logLevel >= 4) {
 			System.out.println("track update; " + status);
 		}
 		
