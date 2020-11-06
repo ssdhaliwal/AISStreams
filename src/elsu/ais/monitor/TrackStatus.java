@@ -36,9 +36,7 @@ public class TrackStatus extends TrackStatusBase implements Cloneable {
 		TrackStatus status = null;
 
 		// if exists; lock and update
-		synchronized (watcher) {
-			status = watcher.isActive(message.getMmsi());
-		}
+		status = watcher.isActive(message.getMmsi());
 
 		if (status == null) {
 			synchronized (TrackStatus.class) {
@@ -67,9 +65,7 @@ public class TrackStatus extends TrackStatusBase implements Cloneable {
 		TrackStatus status = null;
 
 		// if exists; lock and update
-		synchronized (watcher) {
-			status = watcher.isActive(message.getMmsi());
-		}
+		status = watcher.isActive(message.getMmsi());
 
 		if (status == null) {
 			synchronized (TrackStatus.class) {
@@ -96,9 +92,7 @@ public class TrackStatus extends TrackStatusBase implements Cloneable {
 		TrackStatus status = null;
 
 		// if exists; lock and update
-		synchronized (watcher) {
-			status = watcher.isActive(message.getMmsi());
-		}
+		status = watcher.isActive(message.getMmsi());
 
 		if (status == null) {
 			synchronized (TrackStatus.class) {
@@ -126,9 +120,7 @@ public class TrackStatus extends TrackStatusBase implements Cloneable {
 		TrackStatus status = null;
 
 		// if exists; lock and update
-		synchronized (watcher) {
-			status = watcher.isActive(message.getMmsi());
-		}
+		status = watcher.isActive(message.getMmsi());
 
 		if (status == null) {
 			synchronized (TrackStatus.class) {
@@ -156,9 +148,7 @@ public class TrackStatus extends TrackStatusBase implements Cloneable {
 		TrackStatus status = null;
 
 		// if exists; lock and update
-		synchronized (watcher) {
-			status = watcher.isActive(message.getMmsi());
-		}
+		status = watcher.isActive(message.getMmsi());
 
 		if (status == null) {
 			synchronized (TrackStatus.class) {

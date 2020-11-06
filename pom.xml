@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>elsu.AISStreams</groupId>
 	<artifactId>AISStreams</artifactId>
-	<version>1.0.0</version>
+	<version>1.0.1</version>
 
 	<packaging>jar</packaging>
 
@@ -117,7 +117,7 @@
 		<dependency>
 			<groupId>elsu.ais</groupId>
 			<artifactId>AISParser</artifactId>
-			<version>1.0.0</version>
+			<version>1.0.1</version>
 		</dependency>
 
 		<dependency>
