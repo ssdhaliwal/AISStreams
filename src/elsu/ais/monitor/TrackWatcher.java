@@ -82,7 +82,7 @@ public class TrackWatcher {
 				if (!line.isEmpty()) {
 					try {
 						status = objectMapper.readValue(line, TrackStatus.class);
-						trackStatus.put(status.getMmsi(), status);
+						trackStatusMap.put(status.getMmsi(), status);
 					} catch (Exception exi) {
 						System.out.println(getClass().toString() + ", restoreTrackHistoryFromFile()-1, " + exi.getMessage() + ", " + line);
 					}
@@ -93,18 +93,18 @@ public class TrackWatcher {
 		}
 
 		System.out.println(
-				"TrackStatus/ total: " + trackStatus.size() + "/ loaded: " + getStatusPath() + "/trackStatus.log");
+				"TrackStatus/ total: " + trackStatusMap.size() + "/ loaded: " + getStatusPath() + "/trackStatus.log");
 	}
 
 	public void saveTrackHistoryToFile() {
 		try {
 			TrackStatus status = null;
 			List<Object> output = new ArrayList<Object>();
-			for (Integer mmsi : trackStatus.keySet()) {
+			for (Integer mmsi : trackStatusMap.keySet()) {
 				Thread.yield();
 
 				try {
-					status = trackStatus.get(mmsi);
+					status = trackStatusMap.get(mmsi);
 					output.add(status.toString());
 				} catch (Exception exi) {
 				}
@@ -112,7 +112,7 @@ public class TrackWatcher {
 
 			FileUtils.writeFile(getStatusPath() + "/trackStatus.log", output, true);
 			System.out.println(
-					"TrackStatus/ total: " + trackStatus.size() + "/ saved: " + getStatusPath() + "/trackStatus.log");
+					"TrackStatus/ total: " + trackStatusMap.size() + "/ saved: " + getStatusPath() + "/trackStatus.log");
 		} catch (Exception exi) {
 			System.out.println(getClass().toString() + ", saveTrackHistoryToFile(), " + exi.getMessage());
 		}
@@ -248,27 +248,27 @@ public class TrackWatcher {
 		listeners.clear();
 	}
 
-	public ConcurrentHashMap<Integer, TrackStatus> getTrackStatus() {
-		return trackStatus;
+	public HashMap<Integer, TrackStatus> getTrackStatus() {
+		return trackStatusMap;
 	}
 
 	public synchronized TrackStatus getTrackStatus(int key) {
 		TrackStatus status = null;
 
-		status = trackStatus.get(key);
+		status = trackStatusMap.get(key);
 		return status;
 	}
 
 	public synchronized void updateTrackStatus(TrackStatus status) {
-		trackStatus.put(status.getMmsi(), status);
+		trackStatusMap.put(status.getMmsi(), status);
 	}
 
-	public ArrayList<String> getTrackPicture() {
+	public synchronized ArrayList<String> getTrackPicture() {
 		ArrayList<String> result = new ArrayList<String>();
 
-		for (int mmsi : trackStatus.keySet()) {
+		for (int mmsi : trackStatusMap.keySet()) {
 			try {
-				result.add((trackStatus.get(mmsi)).toJSONArray());
+				result.add((trackStatusMap.get(mmsi)).toJSONArray());
 			} catch (Exception exi) {
 			}
 		}
@@ -287,5 +287,5 @@ public class TrackWatcher {
 
 	private List<ITrackListener> listeners = new ArrayList<>();
 
-	private ConcurrentHashMap<Integer, TrackStatus> trackStatus = new ConcurrentHashMap<Integer, TrackStatus>();
+	private HashMap<Integer, TrackStatus> trackStatusMap = new HashMap<Integer, TrackStatus>();
 }

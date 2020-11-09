@@ -13,16 +13,9 @@ import elsu.ais.base.AISMessageBase;
 import elsu.ais.resources.ITrackListener;
 
 public class TrackQueuePurge extends Thread {
-	private TrackWatcher watcher = null;
-	private List<ITrackListener> listeners = null;
-	private ConcurrentHashMap<Integer, TrackStatus> trackStatus = null;
-	private int latencyPurgeSpan = 15;
-	private int latencyCleanupTime = 60000;
-	private int latencyPurgeDays = 5; 
-
 	public TrackQueuePurge(TrackWatcher watcher) {
 		this.watcher = watcher;
-		this.trackStatus = watcher.getTrackStatus();
+		this.trackStatusMap = watcher.getTrackStatus();
 		this.listeners = watcher.getListeners();
 		this.latencyPurgeSpan = watcher.getLatencyPurgeSpan();
 		this.latencyCleanupTime = watcher.getLatencyCleanupTime();
@@ -55,15 +48,15 @@ public class TrackQueuePurge extends Thread {
 				// start the cleanup monitor
 				try {
 					tracks.clear();
-					for (Integer mmsi : trackStatus.keySet()) {
+					for (Integer mmsi : trackStatusMap.keySet()) {
 						Thread.yield();
 						
 						try {
-							status = trackStatus.get(mmsi);
+							status = trackStatusMap.get(mmsi);
 							
 							if (status != null) {
 								if (Days.daysBetween(status.getUpdateTime(), Instant.now()).getDays() >= latencyPurgeDays) {
-									tracks.add(trackStatus.remove(mmsi));
+									tracks.add(trackStatusMap.remove(mmsi));
 	
 									purged++;
 								}
@@ -75,7 +68,7 @@ public class TrackQueuePurge extends Thread {
 						Thread.yield();
 					}
 					
-					System.out.println("TrackStatus/ total: " + trackStatus.size() + "/ purged: " + purged);
+					System.out.println("TrackStatus/ total: " + trackStatusMap.size() + "/ purged: " + purged);
 					if (tracks.size() > 0) {
 						watcher.saveTrackPurgeToFile(tracks);
 					}
@@ -89,4 +82,11 @@ public class TrackQueuePurge extends Thread {
 		} finally {
 		}
 	}
+
+	private TrackWatcher watcher = null;
+	private List<ITrackListener> listeners = null;
+	private HashMap<Integer, TrackStatus> trackStatusMap = null;
+	private int latencyPurgeSpan = 15;
+	private int latencyCleanupTime = 60000;
+	private int latencyPurgeDays = 5; 
 }
