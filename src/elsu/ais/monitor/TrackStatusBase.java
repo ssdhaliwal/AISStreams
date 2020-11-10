@@ -387,6 +387,15 @@ public abstract class TrackStatusBase {
 
 	public void setDimension(VesselDimensions dimension) {
 		try {
+			if ((this.dimension != null) && (dimension != null)) {
+				if ((this.dimension.getToBow() != dimension.getToBow())
+						|| (this.dimension.getToPort() != dimension.getToPort())
+						|| (this.dimension.getToStern() != dimension.getToStern())
+						|| (this.dimension.getToStarboard() != dimension.getToStarboard())) {
+					setUpdated(true);
+				}
+			}
+
 			this.dimension = dimension;
 		} catch (Exception exi) {
 		}
@@ -614,7 +623,7 @@ public abstract class TrackStatusBase {
 				// result = SentenceBase.objectMapper.writeValueAsString(this);
 				ArrayNode node = TrackWatcher.objectMapper.createArrayNode();
 
-				synchronized(positionHistory) {
+				synchronized (positionHistory) {
 					for (TrackStatusPosition trackPosition : getPostitionHistory()) {
 						if (trackPosition != null) {
 							node.add(SentenceBase.objectMapper.readTree(trackPosition.toString()));
@@ -641,7 +650,7 @@ public abstract class TrackStatusBase {
 			// result = SentenceBase.objectMapper.writeValueAsString(this);
 			ArrayNode node = TrackWatcher.objectMapper.createArrayNode();
 
-			synchronized(positionHistory) {
+			synchronized (positionHistory) {
 				for (TrackStatusPosition trackPosition : getPostitionHistory()) {
 					if (trackPosition != null) {
 						node.add(SentenceBase.objectMapper.readTree(trackPosition.toJSONArray()));
@@ -661,17 +670,17 @@ public abstract class TrackStatusBase {
 	}
 
 	public void addPositionHistory(TrackStatus status) {
-		synchronized(positionHistory) {
+		synchronized (positionHistory) {
 			if (this.positionHistory.size() > 10) {
 				this.positionHistory.remove(0);
 			}
-	
+
 			this.positionHistory.add(TrackStatusPosition.fromTrackStatus(status));
 		}
 	}
 
 	public void clearPositionHistory() {
-		synchronized(positionHistory) {
+		synchronized (positionHistory) {
 			positionHistory.clear();
 		}
 	}
