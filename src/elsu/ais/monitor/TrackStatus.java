@@ -15,163 +15,170 @@ public class TrackStatus extends TrackStatusBase implements Cloneable {
 
 	public static TrackStatus fromMessage(TrackWatcher watcher, AISMessageBase message) throws Exception {
 		TrackStatus status = null;
+		Boolean newRecord = false;
 
 		// only process position reports and status voyage data
-		if (message instanceof T1_PositionReportClassA) {
-			status = TrackStatus.fromMessage(watcher, (T1_PositionReportClassA) message);
-		} else if (message instanceof T5_StaticAndVoyageRelatedData) {
-			status = TrackStatus.fromMessage(watcher, (T5_StaticAndVoyageRelatedData) message);
-		} else if (message instanceof T18_StandardClassBEquipmentPositionReport) {
-			status = TrackStatus.fromMessage(watcher, (T18_StandardClassBEquipmentPositionReport) message);
-		} else if (message instanceof T19_ExtendedClassBEquipmentPositionReport) {
-			status = TrackStatus.fromMessage(watcher, (T19_ExtendedClassBEquipmentPositionReport) message);
-		} else if (message instanceof T9_StandardSARPositionReport) {
-			status = TrackStatus.fromMessage(watcher, (T9_StandardSARPositionReport) message);
+		if ((message instanceof T1_PositionReportClassA) ||
+				(message instanceof T5_StaticAndVoyageRelatedData) ||
+				(message instanceof T18_StandardClassBEquipmentPositionReport) ||
+				(message instanceof T19_ExtendedClassBEquipmentPositionReport) ||
+				(message instanceof T9_StandardSARPositionReport) ||
+				(message instanceof T21_AidToNavigationReport) ||
+				(message instanceof T24_StaticDataReportPartA) ||
+				(message instanceof T24_StaticDataReportPartB))
+				{
+					// create a empty placeholder for mmsi for synchronization
+					status = watcher.isActive(message.getMmsi());
+					if (status == null) {
+						synchronized (TrackStatus.class) {
+							if (status == null) {
+								newRecord = true;
+								
+								status = new TrackStatus(message.getMmsi());
+								watcher.updateTrackStatus(status);
+							}
+						}
+					}
+
+					if (message instanceof T1_PositionReportClassA) {
+						status = TrackStatus.fromMessage(watcher, (T1_PositionReportClassA) message, status);
+					} else if (message instanceof T5_StaticAndVoyageRelatedData) {
+						status = TrackStatus.fromMessage(watcher, (T5_StaticAndVoyageRelatedData) message, status);
+					} else if (message instanceof T18_StandardClassBEquipmentPositionReport) {
+						status = TrackStatus.fromMessage(watcher, (T18_StandardClassBEquipmentPositionReport) message, status);
+					} else if (message instanceof T19_ExtendedClassBEquipmentPositionReport) {
+						status = TrackStatus.fromMessage(watcher, (T19_ExtendedClassBEquipmentPositionReport) message, status);
+					} else if (message instanceof T9_StandardSARPositionReport) {
+						status = TrackStatus.fromMessage(watcher, (T9_StandardSARPositionReport) message, status);
+					} else if (message instanceof T21_AidToNavigationReport) {
+						status = TrackStatus.fromMessage(watcher, (T21_AidToNavigationReport) message, status);
+					} else if (message instanceof T24_StaticDataReportPartA) {
+						status = TrackStatus.fromMessage(watcher, (T24_StaticDataReportPartA) message, status);
+					} else if (message instanceof T24_StaticDataReportPartB) {
+						status = TrackStatus.fromMessage(watcher, (T24_StaticDataReportPartB) message, status);
+					}
+					
+					// reset update indicator
+					if (newRecord)
+						synchronized (status) {
+							status.setUpdated(false);
+						}
+				}
+
+		return status;
+	}
+
+	public static TrackStatus fromMessage(TrackWatcher watcher, T1_PositionReportClassA message,
+			TrackStatus status) throws Exception {
+		synchronized (status) {
+			status.addPositionHistory(status);
+			status.fromT1PositionReportClassA(message);
+
+			watcher.updateTrackStatus(status);
+			status = (TrackStatus) status.clone();
 		}
 
 		return status;
 	}
 
-	public static TrackStatus fromMessage(TrackWatcher watcher, T1_PositionReportClassA message) throws Exception {
-		TrackStatus status = null;
-
-		// if exists; lock and update
-		status = watcher.isActive(message.getMmsi());
-
-		if (status == null) {
-			synchronized (TrackStatus.class) {
-				status = new TrackStatus();
-				status.fromT1PositionReportClassA(message);
-				status.setUpdated(false);
-
-				watcher.updateTrackStatus(status);
-				status = (TrackStatus) status.clone();
-			}
-		} else {
-			synchronized (status) {
-				status.addPositionHistory(status);
-				status.fromT1PositionReportClassA(message);
-
-				watcher.updateTrackStatus(status);
-				status = (TrackStatus) status.clone();
-			}
-		}
-
-		return status;
-	}
-
-	public static TrackStatus fromMessage(TrackWatcher watcher, T5_StaticAndVoyageRelatedData message)
+	public static TrackStatus fromMessage(TrackWatcher watcher, T5_StaticAndVoyageRelatedData message,
+			TrackStatus status)
 			throws Exception {
-		TrackStatus status = null;
+		synchronized (status) {
+			status.fromT5StaticAndVoyageRelatedData(message);
 
-		// if exists; lock and update
-		status = watcher.isActive(message.getMmsi());
-
-		if (status == null) {
-			synchronized (TrackStatus.class) {
-				status = new TrackStatus();
-				status.fromT5StaticAndVoyageRelatedData(message);
-				status.setUpdated(false);
-
-				watcher.updateTrackStatus(status);
-				status = (TrackStatus) status.clone();
-			}
-		} else {
-			synchronized (status) {
-				status.fromT5StaticAndVoyageRelatedData(message);
-
-				watcher.updateTrackStatus(status);
-				status = (TrackStatus) status.clone();
-			}
+			watcher.updateTrackStatus(status);
+			status = (TrackStatus) status.clone();
 		}
+
 		return status;
 	}
 
-	public static TrackStatus fromMessage(TrackWatcher watcher, T18_StandardClassBEquipmentPositionReport message)
+	public static TrackStatus fromMessage(TrackWatcher watcher, T18_StandardClassBEquipmentPositionReport message,
+			TrackStatus status)
 			throws Exception {
-		TrackStatus status = null;
+		synchronized (status) {
+			status.addPositionHistory(status);
+			status.fromT18StandardClassBEquipmentPositionReport(message);
 
-		// if exists; lock and update
-		status = watcher.isActive(message.getMmsi());
-
-		if (status == null) {
-			synchronized (TrackStatus.class) {
-				status = new TrackStatus();
-				status.fromT18StandardClassBEquipmentPositionReport(message);
-				status.setUpdated(false);
-
-				watcher.updateTrackStatus(status);
-				status = (TrackStatus) status.clone();
-			}
-		} else {
-			synchronized (status) {
-				status.addPositionHistory(status);
-				status.fromT18StandardClassBEquipmentPositionReport(message);
-
-				watcher.updateTrackStatus(status);
-				status = (TrackStatus) status.clone();
-			}
+			watcher.updateTrackStatus(status);
+			status = (TrackStatus) status.clone();
 		}
+
 		return status;
 	}
 
-	public static TrackStatus fromMessage(TrackWatcher watcher, T19_ExtendedClassBEquipmentPositionReport message)
+	public static TrackStatus fromMessage(TrackWatcher watcher, T19_ExtendedClassBEquipmentPositionReport message,
+			TrackStatus status)
 			throws Exception {
-		TrackStatus status = null;
+		synchronized (status) {
+			status.addPositionHistory(status);
+			status.fromT19ExtendedClassBEquipmentPositionReport(message);
 
-		// if exists; lock and update
-		status = watcher.isActive(message.getMmsi());
-
-		if (status == null) {
-			synchronized (TrackStatus.class) {
-				status = new TrackStatus();
-				status.fromT19ExtendedClassBEquipmentPositionReport(message);
-				status.setUpdated(false);
-
-				watcher.updateTrackStatus(status);
-				status = (TrackStatus) status.clone();
-			}
-		} else {
-			synchronized (status) {
-				status.addPositionHistory(status);
-				status.fromT19ExtendedClassBEquipmentPositionReport(message);
-
-				watcher.updateTrackStatus(status);
-				status = (TrackStatus) status.clone();
-			}
+			watcher.updateTrackStatus(status);
+			status = (TrackStatus) status.clone();
 		}
 
 		return status;
 	}
 
-	public static TrackStatus fromMessage(TrackWatcher watcher, T9_StandardSARPositionReport message) throws Exception {
-		TrackStatus status = null;
+	public static TrackStatus fromMessage(TrackWatcher watcher, T9_StandardSARPositionReport message,
+			TrackStatus status) throws Exception {
+		synchronized (status) {
+			status.addPositionHistory(status);
+			status.fromT9StandardSARPositionReport(message);
 
-		// if exists; lock and update
-		status = watcher.isActive(message.getMmsi());
-
-		if (status == null) {
-			synchronized (TrackStatus.class) {
-				status = new TrackStatus();
-				status.fromT9StandardSARPositionReport(message);
-				status.setUpdated(false);
-
-				watcher.updateTrackStatus(status);
-				status = (TrackStatus) status.clone();
-			}
-		} else {
-			synchronized (status) {
-				status.addPositionHistory(status);
-				status.fromT9StandardSARPositionReport(message);
-
-				watcher.updateTrackStatus(status);
-				status = (TrackStatus) status.clone();
-			}
+			watcher.updateTrackStatus(status);
+			status = (TrackStatus) status.clone();
 		}
+
+		return status;
+	}
+
+	public static TrackStatus fromMessage(TrackWatcher watcher, T21_AidToNavigationReport message,
+			TrackStatus status) throws Exception {
+		synchronized (status) {
+			status.addPositionHistory(status);
+			status.fromT21_AidToNavigationReport(message);
+
+			watcher.updateTrackStatus(status);
+			status = (TrackStatus) status.clone();
+		}
+
+		return status;
+	}
+
+	public static TrackStatus fromMessage(TrackWatcher watcher, T24_StaticDataReportPartA message,
+			TrackStatus status) throws Exception {
+		synchronized (status) {
+			status.addPositionHistory(status);
+			status.fromT24_StaticDataReportPartA(message);
+
+			watcher.updateTrackStatus(status);
+			status = (TrackStatus) status.clone();
+		}
+
+		return status;
+	}
+
+	public static TrackStatus fromMessage(TrackWatcher watcher, T24_StaticDataReportPartB message,
+			TrackStatus status) throws Exception {
+		synchronized (status) {
+			status.addPositionHistory(status);
+			status.fromT24_StaticDataReportPartB(message);
+
+			watcher.updateTrackStatus(status);
+			status = (TrackStatus) status.clone();
+		}
+
 		return status;
 	}
 
 	public TrackStatus() {
+	}
+	
+	public TrackStatus(int mmsi) {
+		setMmsi(mmsi);
 	}
 
 	public synchronized Object clone() throws CloneNotSupportedException {
@@ -236,11 +243,25 @@ public class TrackStatus extends TrackStatusBase implements Cloneable {
 			node.put("assigned", isAssigned()); // 45
 			node.put("commFlag", getCommFlag()); // 46
 			node.put("commFlagText", AISLookupValues.getCommunicationFlag(getCommFlag())); // 47
-			node.set("positionHistory", SentenceBase.objectMapper.readTree(getPositionHistoryAsString())); // 48
-			node.put("createTime", SentenceBase.formatEPOCHToUTC((int) (getCreateTime().getMillis() / 1000))); // 49
-			node.put("updateCounter", getUpdateCounter()); // 50
-			node.put("period", ISOPeriodFormat.standard().print(getPeriod())); // 51
-			node.put("updateTime", SentenceBase.formatEPOCHToUTC((int) (getUpdateTime().getMillis() / 1000))); // 52
+			
+			// T21_AidToNavigationReport
+			node.put(",aidType", getAidType()); // 48
+			node.put(",aidTypeText", AISLookupValues.getNavAidType(getAidType())); // 49
+			node.put(",offPosition", isOffPosition()); // 50
+			node.put(",virtualAid", isVirtualAid()); // 51
+
+			// T24_StaticDataReport (A/B)
+			node.put(",partNumber", getPartNumber()); // 52
+			node.put(",auxiliary", isAuxiliary()); // 53
+			node.put(",vendorId", getVendorId()); // 54
+			node.put(",model", getModel()); // 55
+			node.put(",serial", getSerial()); // 56
+			
+			node.set("positionHistory", SentenceBase.objectMapper.readTree(getPositionHistoryAsString())); // 57
+			node.put("createTime", SentenceBase.formatEPOCHToUTC((int) (getCreateTime().getMillis() / 1000))); // 58
+			node.put("updateCounter", getUpdateCounter()); // 59
+			node.put("period", ISOPeriodFormat.standard().print(getPeriod())); // 60
+			node.put("updateTime", SentenceBase.formatEPOCHToUTC((int) (getUpdateTime().getMillis() / 1000))); // 61
 
 			result = TrackWatcher.objectMapper.writeValueAsString(node);
 		} catch (Exception exi) {
@@ -308,11 +329,25 @@ public class TrackStatus extends TrackStatusBase implements Cloneable {
 			node.add(isAssigned()); // 45
 			node.add(getCommFlag()); // 46
 			node.add(AISLookupValues.getCommunicationFlag(getCommFlag())); // 47
-			node.add(SentenceBase.objectMapper.readTree(getPositionHistoryAsString())); // 48
-			node.add(SentenceBase.formatEPOCHToUTC((int) (getCreateTime().getMillis() / 1000))); // 49
-			node.add(getUpdateCounter()); // 50
-			node.add(ISOPeriodFormat.standard().print(getPeriod())); // 51
-			node.add(SentenceBase.formatEPOCHToUTC((int) (getUpdateTime().getMillis() / 1000))); // 52
+
+			// T21_AidToNavigationReport
+			node.add(getAidType()); // 48
+			node.add(AISLookupValues.getNavAidType(getAidType())); // 49
+			node.add(isOffPosition()); // 50
+			node.add(isVirtualAid()); // 51
+
+			// T24_StaticDataReport (A/B)
+			node.add(getPartNumber()); // 52
+			node.add(isAuxiliary()); // 53
+			node.add(getVendorId()); // 54
+			node.add(getModel()); // 55
+			node.add(getSerial()); // 56
+			
+			node.add(SentenceBase.objectMapper.readTree(getPositionHistoryAsString())); // 57
+			node.add(SentenceBase.formatEPOCHToUTC((int) (getCreateTime().getMillis() / 1000))); // 58
+			node.add(getUpdateCounter()); // 59
+			node.add(ISOPeriodFormat.standard().print(getPeriod())); // 60
+			node.add(SentenceBase.formatEPOCHToUTC((int) (getUpdateTime().getMillis() / 1000))); // 61
 
 			result = TrackWatcher.objectMapper.writeValueAsString(node);
 		} catch (Exception exi) {
@@ -380,11 +415,25 @@ public class TrackStatus extends TrackStatusBase implements Cloneable {
 			result.append(",assigned=" + isAssigned()); // 45
 			result.append(",commFlag=" + getCommFlag()); // 46
 			result.append(",commFlagText=" + AISLookupValues.getCommunicationFlag(getCommFlag())); // 47
-			result.append(",positionHistory=" + SentenceBase.objectMapper.readTree(getPositionHistoryAsString())); // 48
-			result.append(",createTime=" + SentenceBase.formatEPOCHToUTC((int) (getCreateTime().getMillis() / 1000))); // 49
-			result.append(",updateCounter=" + getUpdateCounter()); // 50
-			result.append(",period=" + ISOPeriodFormat.standard().print(getPeriod())); // 51
-			result.append(",updateTime=" + SentenceBase.formatEPOCHToUTC((int) (getUpdateTime().getMillis() / 1000))); // 52
+
+			// T21_AidToNavigationReport
+			result.append(",aidType=" + getAidType()); // 48
+			result.append(",aidTypeText=" + AISLookupValues.getNavAidType(getAidType())); // 49
+			result.append(",offPosition=" + isOffPosition()); // 50
+			result.append(",virtualAid=" + isVirtualAid()); // 51
+
+			// T24_StaticDataReport (A/B)
+			result.append(",partNumber=" + getPartNumber()); // 52
+			result.append(",auxiliary=" + isAuxiliary()); // 53
+			result.append(",vendorId=" + getVendorId()); // 54
+			result.append(",model=" + getModel()); // 55
+			result.append(",serial=" + getSerial()); // 56
+			
+			result.append(",positionHistory=" + SentenceBase.objectMapper.readTree(getPositionHistoryAsString())); // 57
+			result.append(",createTime=" + SentenceBase.formatEPOCHToUTC((int) (getCreateTime().getMillis() / 1000))); // 58
+			result.append(",updateCounter=" + getUpdateCounter()); // 59
+			result.append(",period=" + ISOPeriodFormat.standard().print(getPeriod())); // 60
+			result.append(",updateTime=" + SentenceBase.formatEPOCHToUTC((int) (getUpdateTime().getMillis() / 1000))); // 61
 		} catch (Exception exi) {
 			System.out.println(getClass().getName() + ", toString_Debug(), error, Sentence, " + exi.getMessage());
 		}

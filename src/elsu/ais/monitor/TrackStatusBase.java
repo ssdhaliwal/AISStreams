@@ -140,6 +140,57 @@ public abstract class TrackStatusBase {
 		setPeriod();
 	}
 
+	public void fromT21_AidToNavigationReport(T21_AidToNavigationReport message) {
+		setType(message.getType());
+		setRepeat(message.getRepeat());
+		setMmsi(message.getMmsi());
+
+		setAidType(message.getAidType());
+		setShipName(message.getName());
+		setAccuracy(message.isAccuracy());
+		setLongitude(message.getLongitude());
+		setLatitude(message.getLatitude());
+		setDimension(message.getDimension());
+		setEpfd(message.getEpfd());
+		setSecond(message.getSecond());
+		setOffPosition(message.isOffPosition());
+		setRegional(message.getRegional());
+		setRaim(message.isRaim());
+		setVirtualAid(message.isVirtualAid());
+		setAssigned(message.isAssigned());
+
+		setPeriod();
+	}
+
+	public void fromT24_StaticDataReportPartA(T24_StaticDataReportPartA message) {
+		setType(message.getType());
+		setRepeat(message.getRepeat());
+		setMmsi(message.getMmsi());
+
+		setPartNumber(message.getPartNumber());
+		setAuxilizary();
+		setShipName(message.getShipName());
+
+		setPeriod();
+	}
+
+	public void fromT24_StaticDataReportPartB(T24_StaticDataReportPartB message) {
+		setType(message.getType());
+		setRepeat(message.getRepeat());
+		setMmsi(message.getMmsi());
+
+		setPartNumber(message.getPartNumber());
+		setAuxilizary();
+		setShipType(message.getShipType());
+		setVendorId(message.getVendorId());
+		setModel(message.getModel());
+		setSerial(message.getSerial());
+		setCallSign(message.getCallSign());
+		setEpfd(message.getEpfd());
+
+		setPeriod();
+	}
+
 	public String getTransponderType() {
 		return transponderType;
 	}
@@ -611,6 +662,102 @@ public abstract class TrackStatusBase {
 		this.altitude = altitude;
 	}
 
+	public int getAidType() {
+		return aidType;
+	}
+
+	public void setAidType(int aidType) {
+		if (aidType != this.aidType) {
+			setUpdated(true);
+		}
+		this.aidType = aidType;
+	}
+
+	public boolean isOffPosition() {
+		return offPosition;
+	}
+
+	public void setOffPosition(boolean offPosition) {
+		if (offPosition != this.offPosition) {
+			setUpdated(true);
+		}
+		this.offPosition = offPosition;
+	}
+
+	public boolean isVirtualAid() {
+		return virtualAid;
+	}
+
+	public void setVirtualAid(boolean virtualAid) {
+		if (virtualAid != this.virtualAid) {
+			setUpdated(true);
+		}
+		this.virtualAid = virtualAid;
+	}
+
+	public int getPartNumber() {
+		return partNumber;
+	}
+
+	public void setPartNumber(int partNumber) {
+		if (partNumber != this.partNumber) {
+			setUpdated(true);
+		}
+		this.partNumber = partNumber;
+	}
+
+	public boolean isAuxiliary() {
+		return auxiliary;
+	}
+
+	private void setAuxilizary() {
+		boolean auxiliary = false;
+
+		if ((getMmsi() + "").substring(0, 2) == "98") {
+			auxiliary = true;
+		}
+
+		if (auxiliary != this.auxiliary) {
+			setUpdated(true);
+		}
+		this.auxiliary = auxiliary;
+	}
+
+	public String getVendorId() {
+		return vendorId;
+	}
+
+	public void setVendorId(String vendorId) {
+		String sVendorId = vendorId.replace("@", "");
+		if (!sVendorId.equals(this.vendorId)) {
+			setUpdated(true);
+		}
+
+		this.vendorId = sVendorId.replace("@", "");
+	}
+
+	public int getModel() {
+		return model;
+	}
+
+	public void setModel(int model) {
+		if (model != this.model) {
+			setUpdated(true);
+		}
+		this.model = model;
+	}
+
+	public int getSerial() {
+		return serial;
+	}
+
+	public void setSerial(int serial) {
+		if (serial != this.serial) {
+			setUpdated(true);
+		}
+		this.serial = serial;
+	}
+
 	public ArrayList<TrackStatusPosition> getPostitionHistory() {
 		return positionHistory;
 	}
@@ -799,8 +946,21 @@ public abstract class TrackStatusBase {
 	private boolean assigned = false;
 	private int commFlag = 0;
 
+	// T9_StandardSARPositionReport
 	private int altitude = 4095;
 	private int altitudeSensor = 0;
+
+	// T21_AidToNavigationReport
+	private int aidType = 0;
+	private boolean offPosition = false;
+	private boolean virtualAid = false;
+
+	// T24_StaticDataReport (A/B)
+	private int partNumber = 0;
+	private boolean auxiliary = false;
+	private String vendorId = "";
+	private int model = 0;
+	private int serial = 0;
 
 	private ArrayList<TrackStatusPosition> positionHistory = new ArrayList<TrackStatusPosition>();
 	private int updateCounter = 0;
