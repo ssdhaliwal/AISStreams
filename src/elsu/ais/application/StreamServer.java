@@ -116,7 +116,9 @@ public class StreamServer extends WebSocketServer implements IAISEventListener, 
 	// ais message stream connector listeners
 	@Override
 	public void onAISError(Exception ex, Object o, String message) {
-		System.out.println("{\"message\": " + message + ", \"state\": \"error\"}");
+		if (SentenceBase.logLevel >= 2) {
+			System.out.println("{\"message\": " + message + ", \"state\": \"error\"}");
+		}
 	}
 
 	@Override
@@ -134,8 +136,10 @@ public class StreamServer extends WebSocketServer implements IAISEventListener, 
 	// track watcher listeners
 	@Override
 	public synchronized void onTrackError(Exception ex, String message) {
-		System.out.println("track error; " + ex.getMessage() + "; "+ message);
-		broadcast("{\"message\": " + message + ", \"state\": \"error\"}");
+		if (SentenceBase.logLevel >= 2) {
+			System.out.println("track error; " + ex.getMessage() + "; "+ message);
+			broadcast("{\"message\": " + message + ", \"state\": \"error\"}");
+		}
 	}
 
 	@Override

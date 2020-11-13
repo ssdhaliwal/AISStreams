@@ -178,7 +178,7 @@ public class TrackWatcher {
 		}
 	}
 
-	public synchronized TrackStatus isActive(int mmsi) {
+	public TrackStatus isActive(int mmsi) {
 		return getTrackStatus(mmsi);
 	}
 
