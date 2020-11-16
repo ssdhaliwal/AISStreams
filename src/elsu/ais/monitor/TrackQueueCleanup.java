@@ -1,7 +1,9 @@
 package elsu.ais.monitor;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import elsu.ais.base.AISMessageBase;
@@ -39,7 +41,11 @@ public class TrackQueueCleanup extends Thread {
 
 				// start the cleanup monitor
 				try {
-					for (Integer mmsi : trackStatusMap.keySet()) {
+					ArrayList<Integer> mmsiSet = null;
+					synchronized(trackStatusMap) {
+						mmsiSet = new ArrayList<>(trackStatusMap.keySet());
+					}
+					for (Integer mmsi : mmsiSet) {
 						Thread.yield();
 
 						try {

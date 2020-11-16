@@ -168,7 +168,7 @@ public abstract class TrackStatusBase {
 		setMmsi(message.getMmsi());
 
 		setPartNumber(message.getPartNumber());
-		setAuxilizary();
+		setAuxiliary();
 		setShipName(message.getShipName());
 
 		setPeriod();
@@ -180,7 +180,7 @@ public abstract class TrackStatusBase {
 		setMmsi(message.getMmsi());
 
 		setPartNumber(message.getPartNumber());
-		setAuxilizary();
+		setAuxiliary();
 		setShipType(message.getShipType());
 		setVendorId(message.getVendorId());
 		setModel(message.getModel());
@@ -710,7 +710,7 @@ public abstract class TrackStatusBase {
 		return auxiliary;
 	}
 
-	private void setAuxilizary() {
+	public void setAuxiliary() {
 		boolean auxiliary = false;
 
 		if ((getMmsi() + "").substring(0, 2) == "98") {

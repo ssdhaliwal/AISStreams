@@ -6,9 +6,6 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
-
-import org.joda.time.DateTime;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
@@ -100,7 +97,12 @@ public class TrackWatcher {
 		try {
 			TrackStatus status = null;
 			List<Object> output = new ArrayList<Object>();
-			for (Integer mmsi : trackStatusMap.keySet()) {
+
+			ArrayList<Integer> mmsiSet = null;
+			synchronized(trackStatusMap) {
+				mmsiSet = new ArrayList<>(trackStatusMap.keySet());
+			}
+			for (Integer mmsi : mmsiSet) {
 				Thread.yield();
 
 				try {
@@ -266,7 +268,11 @@ public class TrackWatcher {
 	public synchronized ArrayList<String> getTrackPicture() {
 		ArrayList<String> result = new ArrayList<String>();
 
-		for (int mmsi : trackStatusMap.keySet()) {
+		ArrayList<Integer> mmsiSet = null;
+		synchronized(trackStatusMap) {
+			mmsiSet = new ArrayList<>(trackStatusMap.keySet());
+		}
+		for (Integer mmsi : mmsiSet) {
 			try {
 				result.add((trackStatusMap.get(mmsi)).toJSONArray());
 			} catch (Exception exi) {

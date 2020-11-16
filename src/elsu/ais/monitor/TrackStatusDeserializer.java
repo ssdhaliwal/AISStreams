@@ -12,6 +12,7 @@ import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.JsonNode;
 
+import elsu.ais.base.AISLookupValues;
 import elsu.ais.messages.data.VesselDimensions;
 
 public class TrackStatusDeserializer extends JsonDeserializer<TrackStatus> {
@@ -77,7 +78,19 @@ public class TrackStatusDeserializer extends JsonDeserializer<TrackStatus> {
 		status.setMsg22(node.get("msg22").asBoolean());
 		status.setAssigned(node.get("assigned").asBoolean());
 		status.setCommFlag(node.get("commFlag").asInt());
+		
+		// T21_AidToNavigationReport
+		status.setAidType(node.get("aidType").asInt());
+		status.setOffPosition(node.get("offPosition").asBoolean());
+		status.setVirtualAid(node.get("virtualAid").asBoolean());
 
+		// T24_StaticDataReport (A/B)
+		status.setPartNumber(node.get("partNumber").asInt());
+		status.setVendorId(node.get("vendorId").asText());
+		status.setModel(node.get("model").asInt());
+		status.setSerial(node.get("serial").asInt());
+		status.setAuxiliary();
+		
 		//node.set("positionHistory", SentenceBase.objectMapper.readTree(getPositionHistoryAsString())); // 48
 		status.setCreateTime(Instant.parse(node.get("createTime").asText().replace(" UTC", "Z").replace(" ", "T")));
 		status.setUpdateCounter(node.get("updateCounter").asInt());
