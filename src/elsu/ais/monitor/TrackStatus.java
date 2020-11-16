@@ -245,17 +245,17 @@ public class TrackStatus extends TrackStatusBase implements Cloneable {
 			node.put("commFlagText", AISLookupValues.getCommunicationFlag(getCommFlag())); // 47
 			
 			// T21_AidToNavigationReport
-			node.put(",aidType", getAidType()); // 48
-			node.put(",aidTypeText", AISLookupValues.getNavAidType(getAidType())); // 49
-			node.put(",offPosition", isOffPosition()); // 50
-			node.put(",virtualAid", isVirtualAid()); // 51
+			node.put("aidType", getAidType()); // 48
+			node.put("aidTypeText", AISLookupValues.getNavAidType(getAidType())); // 49
+			node.put("offPosition", isOffPosition()); // 50
+			node.put("virtualAid", isVirtualAid()); // 51
 
 			// T24_StaticDataReport (A/B)
-			node.put(",partNumber", getPartNumber()); // 52
-			node.put(",auxiliary", isAuxiliary()); // 53
-			node.put(",vendorId", getVendorId()); // 54
-			node.put(",model", getModel()); // 55
-			node.put(",serial", getSerial()); // 56
+			node.put("partNumber", getPartNumber()); // 52
+			node.put("auxiliary", isAuxiliary()); // 53
+			node.put("vendorId", getVendorId()); // 54
+			node.put("model", getModel()); // 55
+			node.put("serial", getSerial()); // 56
 			
 			node.set("positionHistory", SentenceBase.objectMapper.readTree(getPositionHistoryAsString())); // 57
 			node.put("createTime", SentenceBase.formatEPOCHToUTC((int) (getCreateTime().getMillis() / 1000))); // 58

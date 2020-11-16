@@ -48,7 +48,12 @@ public class TrackQueuePurge extends Thread {
 				// start the cleanup monitor
 				try {
 					tracks.clear();
-					for (Integer mmsi : trackStatusMap.keySet()) {
+
+					ArrayList<Integer> mmsiSet = null;
+					synchronized(trackStatusMap) {
+						mmsiSet = new ArrayList<>(trackStatusMap.keySet());
+					}
+					for (Integer mmsi : mmsiSet) {
 						Thread.yield();
 						
 						try {
